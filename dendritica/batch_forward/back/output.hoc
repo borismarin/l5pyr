@@ -1,0 +1,865 @@
+/* Relating dendritic geometry and signal propagation   */
+/* output.hoc Version 1.0                               */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+proc batch()        { local ct,n
+	      		/* run procedure $1 on all cells, using ActiveModel $s2 */
+      			/* 1 save_geometry() */
+	      		/* 2 save_active() */
+	      		/* 3 save_all() */
+	      		/*  if (numarg()==3) initsimvclamp(ActiveModel) */
+	      		/*  eg batch(3,act0) */	         
+	n=numarg()
+	if (n==1) ActiveModel = act0 else ActiveModel = $s2
+     	if (n==3) initsimvclamp(ActiveModel)
+     	for ct=0,CellList.count-1 { calculation(CellList.object(ct).loc,$1,ActiveModel) }
+			}
+
+/********************************************************************************/
+
+proc calculation()  { 	local i 
+		/* shell procedure specifying which proc to run on each cell in batch*/
+		/* $s1 cell 		*/
+		/* $2  which procedure   */ 
+		/* $s3 active model      */
+		/* e.g. calculation(int2.loc,2,act0) */
+		if ($2==1)	save_geometry($s1,$s3) 
+		if ($2==2)	save_active($s1,$s3) 
+		if ($2==3)    save_all($s1,$s3) 
+
+		if ($2==7)    get_neurondata($s1,$s3)		
+
+		if ($2==8)     manual($s1)
+
+		if ($2==10)   deq_calc($s1,"don't save") 
+		if ($2==11)   dAdr_calc($s1,"don't save")
+		if ($2==12)   slope_darea($s1,ActiveModel,"don't","write") 
+		if ($2==13)   slope_deq($s1,ActiveModel,"don't","write")
+
+		if ($2==16)   equivforward($s1,$s3)
+		if ($2==15)   equivforwardII($s1,$s3)
+		if ($2==26)   normforward($s1,$s3) 
+
+		if ($2==17)   save_back($s1,$s3)
+		if ($2==18)   save_fI($s1,$s3)
+		if ($2==19)   save_fII($s1,$s3)
+		if ($2==21)   printvectors($s1,$s3)
+
+		if ($2==30)   equivZfwdwrite($s1,$s3)
+
+		if ($2==40)   printvectors_back($s1,$s3)
+		if ($2==41)   printvectors_forward($s1,$s3)
+		if ($2==42)   printvectors_forward2($s1,$s3)
+
+
+	   	}
+
+/********************************************************************************/
+
+proc manual() {
+			dAdr_calc($s1)
+			deq_calc($s1)
+			slope_darea()
+			slope_deq()
+
+		}
+
+
+proc save_geometry() {
+		/*  saves geometry data of cell $s1 to disk */
+		/*  $s1 cell */
+		/*  $s2 active model (for equivalent cable) */
+		/*  e.g. save_geometry(int2,act0)  */
+
+		if (numarg()==2) get($s1,$s2,1) 
+		L_switch(0)
+		geometry_calc()
+		equivalent_calc()
+		write_numbers()
+			}
+
+/********************************************************************************/
+
+proc save_active() {    
+		/*  saves active data of cell $s1 to disk */
+		/*  $s1 cell */
+		/*  $s2 active model */
+		/*  e.g. active_save(int2,act0)  */
+
+		if (numarg()==2) get($s1,$s2,1)     	
+		get_gdist(1)
+		geometry_calc()	 
+		if (diffvonset) set_waveform("dendspike_p21",1) else set_waveform()
+		if ((!diffvonset)&&(!equiv)) threshold_calc() else forwardthreshold_calc()
+		impedance_calc()  
+		if (equiv) { 	write_nathreshold(2)
+				print "this is the critical bit"
+				equivZfwdwrite($s1,$s2) 
+		    } else {
+ 		   		equivalent_calc()
+		   		if (diffvonset) write_nathreshold(1) else write_nathreshold() 
+			   }
+		}
+
+/********************************************************************************/
+
+
+
+proc save_cable() {
+
+		print "\nEquivalent cable============================="
+		make_equivalent_cable() 
+		equiv = 1
+		cell_name(cell)
+		// save_geometry(cell,ActiveModel)
+		save_active(cell,ActiveModel)
+
+		}
+
+/********************************************************************************/
+
+proc save_forwardmini() { 
+
+		L_switch(1)
+		geometry_calc()
+		set_waveform("dendspike_p21",1)
+		APdecay(1)
+		APdecay(3)
+		write_nathreshold(5)
+		L_switch(0)
+		geometry_calc()
+		if (!equiv) slope_darea()
+		equivalent_calc()
+		write_numbers()
+
+			}
+
+/********************************************************************************/
+
+proc save_all() {    
+		/*  save active data of cell $s1 + equivalent cylinder + forward prop */
+		/*  $s1 cell */
+		/*  $s2 active model */
+		/*  e.g. active_save(int2,act0)  */
+
+		set_suffix("reset")
+		diffvonset=0
+		cell        = $s1
+		ActiveModel = $s2
+
+
+		print "\nNormal Morphology========================"
+		// save_geometry(cell,ActiveModel)
+		save_active(cell,ActiveModel)
+		save_cable()
+
+		diffvonset=1
+		print "\nForward propagation======================="
+		name_somadist(200,"load","save_geometry()")
+		name_somadist(200,"load","{save_active() save_cable()}")
+
+		name_halfdecay(halfdecay_maxlocation,"load","save_geometry()")
+		name_halfdecay(halfdecay_maxlocation,"load","{save_active() save_cable()}")
+
+		name_halfdecay(halfdecay_minlocation,"load","save_forwardmini()")
+		name_halfdecay(apsoma_maxlocation,"load","save_forwardmini()")
+		name_halfdecay(apsoma_minlocation,"load","save_forwardmini()")
+		name_halfdecay(ap200_maxlocation,"load","save_forwardmini()")
+		name_halfdecay(ap200_minlocation,"load","save_forwardmini()")
+
+		}
+
+
+proc save_back() {    
+		/*  save active data of cell $s1 + equivalent cylinder + forward prop */
+		/*  $s1 cell */
+		/*  $s2 active model */
+		/*  e.g. active_save(int2,act0)  */
+
+		set_suffix("reset")
+		diffvonset=0
+		cell        = $s1
+		ActiveModel = $s2
+
+
+		print "\n\nNormal Morphology========================"
+		save_geometry(cell,ActiveModel)
+		save_active(cell,ActiveModel)
+		save_cable()
+
+		}
+
+
+
+proc save_fI() {    
+		/*  save active data of cell $s1 + equivalent cylinder + forward prop */
+		/*  $s1 cell */
+		/*  $s2 active model */
+		/*  e.g. active_save(int2,act0)  */
+
+		set_suffix("reset")
+		diffvonset=1
+		cell        = $s1
+		ActiveModel = $s2
+
+		cell_name(cell)
+		readveca("halfdecay")
+		
+		print "\nForward propagation========================"
+
+		name_somadist(200,"load","save_geometry()")
+		name_somadist(200,"load","{save_active() save_cable()}")
+
+		name_halfdecay(halfdecay_minlocation,"load","save_forwardmini()")
+		name_halfdecay(apsoma_maxlocation,"load","save_forwardmini()")
+		name_halfdecay(apsoma_minlocation,"load","save_forwardmini()")
+		name_halfdecay(ap200_maxlocation,"load","save_forwardmini()")
+		name_halfdecay(ap200_minlocation,"load","save_forwardmini()")
+
+		}
+
+
+
+/**************************************************************************/
+
+proc save_fII() {    
+		/*  save active data of cell $s1 + equivalent cylinder + forward prop */
+		/*  $s1 cell */
+		/*  $s2 active model */
+		/*  e.g. active_save(int2,act0)  */
+
+		set_suffix("reset")
+		diffvonset=1
+		cell        = $s1
+		ActiveModel = $s2
+
+		cell_name(cell)
+		readveca("halfdecay")
+
+		print "\nForward propagation============================="
+
+		name_halfdecay(halfdecay_maxlocation,"load","save_geometry()")
+		name_halfdecay(halfdecay_maxlocation,"load","{save_active() save_cable()}")
+		}
+
+
+proc helpme() {    
+		/*  save active data of cell $s1 + equivalent cylinder + forward prop */
+		/*  $s1 cell */
+		/*  $s2 active model */
+		/*  e.g. active_save(int2,act0)  */
+
+		set_suffix("reset")
+		diffvonset=1
+		cell        = ca1g.loc
+		ActiveModel = act0
+
+		cell_name(cell)
+		readveca("halfdecay")
+
+		print "\nForward propagation============================="
+		name_halfdecay(halfdecay_maxlocation,"load","{save_active()}")
+		}
+
+
+
+/********************************************************************************/
+
+proc write_numbers() { /* write out values calculated in geometry_calc() */
+			/* these values are independent of the active model */
+ 
+		writevec("numbers")
+	   	fprint("area_max	  	= %2.4f\n",area_max)
+	   	fprint("darea_max	  	= %2.4f\n",darea_max)
+	   	fprint("darea_maxdist	  	= %2.4f\n",darea_maxdist)
+	   	fprint("distance_max  		= %2.4f\n",adist.max)
+	   	fprint("taper	  		= %2.4f\n",taper)
+
+		if (!equiv) {
+	   	fprint("equiv_diam 		= %2.4f\n",equiv_diam)
+	   	fprint("sections_max  		= %2.4f\n",sections_max)
+	   	fprint("sections_maxdist  	= %2.4f\n",sections_maxdist)
+	   	fprint("sections_mean  		= %2.4f\n",sections_mean)
+	   	fprint("taper_mean  		= %2.4f\n",taper_mean)
+	   	fprint("diam_mean	  	= %2.4f\n",diam_mean)
+	   	fprint("branchpoints_num  	= %2.4f\n",branchpoints_num)
+	   	fprint("rallratio_mean  	= %2.4f\n",rallratio_mean)
+		fprint("rallratio_peak		= %2.4f\n",rallratio_peak)
+	   	fprint("diamratio_mean  	= %2.4f\n",diamratio_mean)
+		fprint("diamratio_peak		= %2.4f\n",diamratio_peak)
+	   	fprint("branchdensity	  	= %2.4f\n",branchdensity)
+	   	fprint("branchdensityII	  	= %2.4f\n",branchdensityII)
+	   	fprint("rallratio_noend_mean  	= %2.4f\n",rallratio_noend_mean)
+		fprint("rallratio_noend_peak	= %2.4f\n",rallratio_noend_peak)
+	   	fprint("diamratio_noend_mean  	= %2.4f\n",diamratio_noend_mean)
+		fprint("diamratio_noend_peak	= %2.4f\n",diamratio_noend_peak)
+	   	fprint("branchdensity_noend	= %2.4f\n",branchdensity_noend)
+	   	fprint("branchdensityII_noend	= %2.4f\n",branchdensityII_noend)
+	   	fprint("mean_stem_dendrite_diam	= %2.4f\n",mean_stem_dendrite_diam)
+				}
+		wopen()
+			}
+
+/********************************************************************************/
+
+proc write_nathreshold() {			local n,i,j,q
+		/* write out numbers that depend on the active model */
+		/* n = 0 everything */
+		/* n = 1 skip equivalent_calc calculations */
+		/* n = 2 skip nathreshold et al.  but not nathresholdvclamp, APhalf */
+		/* n = 3 skip all nathreshold calculations */
+		n = numarg()
+		if (n==1) n = $1 else n = 0
+
+		writeveca("nathreshold")
+
+	   	fprint("adarea_max	  	= %2.4f\n",adarea_max)      // Geometry_calc
+	   	fprint("adarea_maxdist	  	= %2.4f\n",adarea_maxdist)
+	   	fprint("adistance_max  		= %2.4f\n",adist.max)
+	   	fprint("ataper	  		= %2.4f\n",ataper)
+	  	fprint("AP200		 	= %2.4f\n",AP200)
+	  	fprint("APhalf	 		= %2.4f\n",APhalf)
+	  	fprint("AP200_pass	 	= %2.4f\n",AP200_pass)
+	  	fprint("APhalf_pass 		= %2.4f\n",APhalf_pass) 
+		if (n<4){
+	   	fprint("input_resistance	= %2.4f\n",input_resistance)
+	   	fprint("Zmismatch_peak 		= %2.4f\n",Zmismatch_peak)
+	   	fprint("Rmismatch_peak 		= %2.4f\n",Rmismatch_peak)
+	   	fprint("aZmismatch_peak 	= %2.4f\n",aZmismatch_peak)
+	   	fprint("aRmismatch_peak 	= %2.4f\n",aRmismatch_peak)
+	   	fprint("Zmismatch_mean 		= %2.4f\n",Zmismatch_mean)
+	   	fprint("Rmismatch_mean 		= %2.4f\n",Rmismatch_mean)
+	   	fprint("aZmismatch_mean 	= %2.4f\n",aZmismatch_mean)
+	   	fprint("aRmismatch_mean 	= %2.4f\n",aRmismatch_mean)
+	   	fprint("Zmismatch_peak_noend 	= %2.4f\n",Zmismatch_peak_noend)
+	   	fprint("Rmismatch_peak_noend 	= %2.4f\n",Rmismatch_peak_noend)
+	   	fprint("aZmismatch_peak_noend 	= %2.4f\n",aZmismatch_peak_noend)
+	   	fprint("aRmismatch_peak_noend 	= %2.4f\n",aRmismatch_peak_noend)
+	   	fprint("Zmismatch_mean_noend 	= %2.4f\n",Zmismatch_mean_noend)
+	   	fprint("Rmismatch_mean_noend 	= %2.4f\n",Rmismatch_mean_noend)
+	   	fprint("aZmismatch_mean_noend 	= %2.4f\n",aZmismatch_mean_noend)
+	   	fprint("aRmismatch_mean_noend 	= %2.4f\n",aRmismatch_mean_noend)
+	   	fprint("Zfwd_min 		= %2.4f\n",Zfwd_min)
+	   	fprint("Zfwd_max 		= %2.4f\n",Zfwd_max)
+	   	fprint("dZfwd_min 		= %2.4f\n",dZfwd_min)
+	   	fprint("dZfwd_max 		= %2.4f\n",dZfwd_max)
+	   	fprint("Rfwd_min 		= %2.4f\n",Rfwd_min)
+	   	fprint("Rfwd_max 		= %2.4f\n",Rfwd_max)
+	   	fprint("dRfwd_min 		= %2.4f\n",dRfwd_min)
+	   	fprint("dRfwd_max 		= %2.4f\n",dRfwd_max)
+	   	fprint("aZfwd_min 		= %2.4f\n",aZfwd_min)
+	   	fprint("aZfwd_max 		= %2.4f\n",aZfwd_max)
+	   	fprint("daZfwd_min 		= %2.4f\n",daZfwd_min)
+	   	fprint("daZfwd_max 		= %2.4f\n",daZfwd_max)
+	   	fprint("aRfwd_min 		= %2.4f\n",aRfwd_min)
+	   	fprint("aRfwd_max 		= %2.4f\n",aRfwd_max)
+	   	fprint("daRfwd_min 		= %2.4f\n",daRfwd_min)
+	   	fprint("daRfwd_max 		= %2.4f\n",daRfwd_max)
+			}
+		if (n<3){
+	  	fprint("nathresholdvclamp  	= %2.4f\n",nathresholdvclamp)	
+			}
+		if (n<2){
+	   	fprint("asections_max  		= %2.4f\n",asections_max)
+	   	fprint("asections_maxdist  	= %2.4f\n",asections_maxdist)
+	   	fprint("asections_mean  	= %2.4f\n",asections_mean)
+	   	fprint("abranchdensity	  	= %2.4f\n",abranchdensity)
+	   	fprint("abranchdensityII	= %2.4f\n",abranchdensityII)
+	   	fprint("abranchdensity_noend	= %2.4f\n",abranchdensity_noend)
+	   	fprint("abranchdensityII_noend	= %2.4f\n",abranchdensityII_noend)
+	   	fprint("adeq_max		= %2.4f\n",adeq_max)
+	   	fprint("adeq_maxdist		= %2.4f\n",adeq_maxdist)
+	   	fprint("ataper_mean  		= %2.4f\n",ataper_mean) // equivalent_calc
+	   	fprint("adiam_mean	  	= %2.4f\n",adiam_mean)
+			}
+		if (n<1){ 	
+		fprint("nathreshold 	  	= %2.4f\n",nathreshold)
+		fprint("st_intensity	  	= %2.4f\n",st_intensity)
+		fprint("nathresholdvclamp2  	= %2.4f\n",nathresholdvclamp2)
+	  	fprint("AP200_half	        = %2.4f\n",AP200_half)
+	  	fprint("AP200_steep	        = %2.4f\n",AP200_steep)
+	  	fprint("AP200_range	        = %2.4f\n",AP200_range)
+	  	fprint("AP200_basis	        = %2.4f\n",AP200_basis)
+		q=sens[0].size()
+		for i=0,2  { fprint("sens[%d]      = new Vector(%d)\n",i,q)
+		for j=0,sens[0].size()-1 { fprint("sens[%d].x[%d]=%2.4f\n",i,j,sens[i].x[j]) }}
+			}
+		wopen()
+		}
+		   
+/********************************************************************************/
+
+
+
+
+proc geometry_read() {	/*  reads geometry data into cell $s1 */
+			/*  used by procedure get() */
+			/*  e.g. geometry_read(int2)  */
+
+			L_switch(0)
+			readvec("areas",Ar)
+			if (!equiv) {
+
+			readvec("cdiam",cdiam)
+			readvec("rdiam",rdiam)
+			readvec("mdiam",mdiam)
+			readvec("sections",sections)   
+				}
+
+			readvec("numbers")
+//			readvec("darea")
+
+		     }
+
+/********************************************************************************/
+
+proc active_read() { 	local i,j, k, kbp  	
+			/*  reads active data into cell $s1 */
+			/* $s2 active model
+			/*  used by procedure get() */
+			/*  e.g. active_read(int2,act0)  */
+
+			L_switch(1)
+			readveca("areas",Ar)
+			L_switch(0)
+
+			readveca("nathreshold")
+			st_set(st_intensity)
+			if (!equiv){	
+
+			readveca("cdiam",cdiam)
+			readveca("rdiam",rdiam)
+			readveca("mdiam",mdiam)
+			readveca("sections",sections)
+				    }
+
+			readveca("frequency",Zfrequency)
+			readveca("Zmismatch",Zmismatch)
+			readveca("Rmismatch",Rmismatch)
+			readveca("Zback",Zback)
+			readveca("Rback",Rback)
+			readveca("Zfwd",Zfwd)
+			readveca("Rfwd",Rfwd)
+			readveca("aZfwd",aZfwd)
+			readveca("aRfwd",aRfwd)
+			readveca("Z",Z)
+			readveca("R2",R2)
+			readveca("aZmismatch",aZmismatch)
+			readveca("aRmismatch",aRmismatch)
+			readveca("aZback",aZback)
+			readveca("aRback",aRback)
+			readveca("aZfwd",aZfwd)
+			readveca("aRfwd",aRfwd)
+			readveca("aZ",aZ)
+			readveca("aR",aR)
+
+			j = kbp  = 0
+			forsec all { 
+			  for i = 1,nseg { 	
+				k = (i-.5)/nseg	
+				f_pk(k)		 	= Zfrequency.x[kbp]
+				Rmismatch_pk(k)		= Rmismatch.x[j]
+				Zmismatch_pk(k)		= Zmismatch.x[j]
+				Zfwd_pk(k)		= Zfwd.x[j]
+				Rfwd_pk(k)		= Rfwd.x[j]
+				Zback_pk(k)		= Zback.x[j]
+				Rback_pk(k)		= Rback.x[j]
+				Zfwd_pk(k)		= Zfwd.x[j]
+				Rfwd_pk(k)		= Rfwd.x[j]
+				Z_pk(k)			= Z.x[j]
+				R_pk(k)			= R2.x[j]
+				aZmismatch_pk(k)	= aZmismatch.x[j]
+				aRmismatch_pk(k)	= aRmismatch.x[j]
+				aZback_pk(k)		= aZback.x[j]
+				aRback_pk(k)		= aRback.x[j]
+				aZfwd_pk(k)		= aZfwd.x[j]
+				aRfwd_pk(k)		= aRfwd.x[j]
+				aZ_pk(k)		= aZ.x[j]
+				aR_pk(k)		= aR.x[j]
+				j += 1  		/* sum of segments */
+					   } 				 
+				kbp +=1 }
+
+				Zmismatch.resize(0)
+				Rmismatch.resize(0)
+				Zback.resize(0)
+				Rback.resize(0)
+				Zfwd.resize(0)
+				Rfwd.resize(0)
+				aZfwd.resize(0)
+				aRfwd.resize(0)
+				Z.resize(0)
+				R2.resize(0)
+				aZmismatch.resize(0)
+				aRmismatch.resize(0)
+				aZback.resize(0)
+				aRback.resize(0)
+				aZfwd.resize(0)
+				aRfwd.resize(0)
+				aZ.resize(0)
+				aR.resize(0)
+
+		for i=1,6 {
+
+		dist_switch(i) 
+
+
+	   	forsec distlist { for j = 0,nseg-1 {	k = (j+.5)/nseg
+
+			Zmismatch.append(Zmismatch_pk(k))
+			aZmismatch.append(aZmismatch_pk(k))
+			Rmismatch.append(Rmismatch_pk(k))
+			aRmismatch.append(aRmismatch_pk(k))
+			Zback.append(Zback_pk(k))
+			aZback.append(aZback_pk(k))
+			Rback.append(Rback_pk(k))
+			aRback.append(aRback_pk(k))
+			Zfwd.append(Zfwd_pk(k))
+			aZfwd.append(aZfwd_pk(k))
+			Rfwd.append(Rfwd_pk(k))
+			aRfwd.append(aRfwd_pk(k))
+			Z.append(Z_pk(k))
+			aZ.append(aZ_pk(k))
+			R2.append(R_pk(k))
+			aR.append(aR_pk(k))
+							 } } }
+
+			dist_switch(1)
+
+			}
+
+/********************************************************************************/
+
+proc normforward() { local hdum,fdum
+
+		cell_name($s1)
+		if (forward) 		 name_somadist(200,"load")
+		if (hdecay)  		 name_halfdecay(halfdecay_maxlocation,"load")
+		if (!hdecay && !forward) get($s1,$s2,1)
+		active_read() 
+
+		L_switch(1)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"Zfwdi_%s",str5)
+
+
+		hdum=hdecay
+		fdum=forward
+		set_suffix("reset")
+		hdecay=hdum
+		forward=fdum
+		cell_name($s1)
+		ActiveModel=$s2
+		activecell = cellname
+
+		writevecs(str5,Zfwd,Rfwd,Zmismatch,Rmismatch,dist)
+	}
+
+
+
+
+
+proc equivforward() {local n, hdum,fdum
+		equiv = 1
+		get($s1,$s2,1)
+		active_read() 
+		L_switch(1)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"Zfwd_%s",str5)
+		writevecs(str5,Zfwd,Rfwd,Zmismatch,Rmismatch)
+
+		hdum=hdecay
+		fdum=forward
+		set_suffix("reset")
+		hdecay=hdum
+		forward=fdum
+
+		cell_name($s1)
+		ActiveModel=$s2
+		activecell = cellname
+		rdiam = new Vector()
+		readveca("rdiam",rdiam)
+		electrotonicL=1
+		gdist = new Vector(rdiam.size)
+	 	{ gdist.indgen(0,gstep()) gdist.x[0]=gstep()/40 }
+
+
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"rdiam_%s",str5)
+		writevecs(str5,gdist,rdiam)			
+	}
+
+proc equivforwardII() { local hdum,fdum
+
+		equiv = 1
+		get($s1,$s2,1)
+		active_read() 
+		L_switch(1)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"Zfwdi_%s",str5)
+
+
+		hdum=hdecay
+		fdum=forward
+		set_suffix("reset")
+		hdecay=hdum
+		forward=fdum
+		cell_name($s1)
+		ActiveModel=$s2
+		activecell = cellname
+
+		rdiam = new Vector()
+		readveca("rdiam",rdiam)
+		electrotonicL=1
+		gdist = new Vector(rdiam.size)
+	        { gdist.indgen(0,gstep()) gdist.x[0]=gstep()/40}
+		rdiam.interpolate(dist,gdist)
+
+		writevecs(str5,Zfwd,Rfwd,Zmismatch,Rmismatch,dist,rdiam)
+
+	}
+
+/*
+- dAdr und Abstand vom Soma in geometrischen Koordinaten, in der
+Originalzelle, fuer backpropagation
+
+- Zfwd,Rfwd,Zmismatch,Rmismatch,dist in elektrotonischen Koordinaten
+im equivalent cable fuer die _forward_ propagation
+
+- dAdr und Abstand vom der dendritischen Elektrode in geometrischen
+Koordinaten, in der Originalzelle, fuer forward propagation?
+
+*/
+
+proc printvectors() {
+
+		cell = $s1
+		ActiveModel = $s2
+
+		get(cell,ActiveModel)  // back: { dAr;dist }
+		L_switch(0)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"dAsoma_%s",str5)
+		writevecs(str5,dAr,gdist)
+
+
+		name_somadist(200,"load")  // forward200: { dAr;dist }
+		geometry_read(cell) 
+		active_read(cell,ActiveModel)  
+		for i=0,1 { L_switch(1-i)  get_gdist() }	
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"fdAsoma_%s",str5)
+		writevecs(str5,dAr,gdist)
+
+		equiv = 1	     // forward200equiv: { Zfwd;Rfwd;dist;Rmismatch;Zmismatch }
+		cell_name(cell)
+		get(cell,ActiveModel) 
+		L_switch(1)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"eqZfwd_%s",str5)
+		writevecs(str5,Zfwd,Rfwd,dist,Rmismatch,Zmismatch)
+
+
+				// halfdecymax: { dAr;dist }
+		name_halfdecay(halfdecay_maxlocation,"load")
+		geometry_read(cell) 
+		active_read(cell,ActiveModel)  
+		for i=0,1 { L_switch(1-i)  get_gdist() }	
+		L_switch(0)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"fdAsoma_%s",str5)
+		writevecs(str5,dAr,gdist)
+
+		equiv = 1  // halfdecymaxequiv: { Zfwd;Rfwd;dist;Rmismatch;Zmismatch }
+		cell_name(cell)
+		get(cell,ActiveModel) 
+		L_switch(1)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"eqZfwd_%s",str5)
+		writevecs(str5,Zfwd,Rfwd,dist,Rmismatch,Zmismatch)
+			
+	}
+
+
+
+proc printvectors_back() {
+
+		cell = $s1
+		ActiveModel = $s2
+
+		get(cell,ActiveModel)  // back: { dAr;dist }
+		L_switch(0)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"dAsoma_%s",str5)
+		writevecs(str5,dAr,gdist)
+
+			}
+
+proc printvectors_forward() {
+
+		cell = $s1
+		ActiveModel = $s2
+		cell_name(cell)
+
+		name_somadist(200,"load")  // forward200: { dAr;dist }
+		geometry_read(cell) 
+		active_read(cell,ActiveModel)  
+		for i=0,1 { L_switch(1-i)  get_gdist() }	
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"fdAsoma_%s",str5)
+		writevecs(str5,dAr,gdist)
+
+		equiv = 1	     // forward200equiv: { Zfwd;Rfwd;dist;Rmismatch;Zmismatch }
+		cell_name(cell)
+		get(cell,ActiveModel,1) 
+		active_read()
+		L_switch(1)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"eqZfwd_%s",str5)
+		writevecs(str5,Zfwd,Rfwd,dist,Rmismatch,Zmismatch)
+
+
+				}
+
+
+proc printvectors_forward2() {
+
+		cell = $s1
+		ActiveModel = $s2
+		cell_name(cell)
+
+				// halfdecymax: { dAr;dist }
+		name_halfdecay(halfdecay_maxlocation,"load")
+		geometry_read(cell) 
+		active_read(cell,ActiveModel)  
+		for i=0,1 { L_switch(1-i)  get_gdist() }	
+		L_switch(0)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"fdAsoma_%s",str5)
+		writevecs(str5,dAr,gdist)
+
+		equiv = 1  // halfdecymaxequiv: { Zfwd;Rfwd;dist;Rmismatch;Zmismatch }
+		cell_name(cell)
+		get(cell,ActiveModel,1)
+		active_read() 
+		L_switch(1)
+		dist_switch(2)
+		str5 = celladdress
+		strob.right(str5,1)
+		sprint(str5,"eqZfwd_%s",str5)
+		writevecs(str5,Zfwd,Rfwd,dist,Rmismatch,Zmismatch)
+			
+	}
+
+
+proc make_figures() { local n
+
+	n=numarg()
+
+	if (n==0) ActiveModel=act0 else ActiveModel = $s1
+
+	get_data()
+	averages(3014)       	// nathresholdvclamp
+	cplot(3014,1003)  	// Nathresholdvclamp vs number of branchpoints
+	cplot(3014,1013)  	// Nathresholdvclamp vs d2area_max
+
+
+
+	// remove L2/3 pyramidal cell so that only layer 5 remain for averaging
+	l23 = new Vector()
+	get_data()
+	averages(3011)  	// passive AP200
+	averages(3016)  	// AP200 half-distance			
+
+
+               }
+
+
+
+proc equivZfwdwrite() {
+		equiv = 1
+		get($s1,$s2,1)
+		L_switch(1)
+		active_read()
+		dist_switch(2)
+
+		get_cZ(1)
+		cZfwd_min		= dminimum
+		cZfwd_max		= dmaximum
+
+		get_cZ(2)
+		cRfwd_min		= dminimum
+		cRfwd_max		= dmaximum
+
+		get_cZ(3)
+		caZfwd_min		= dminimum
+		caZfwd_max		= dmaximum
+
+		get_cZ(4)
+		caRfwd_min		= dminimum
+		caRfwd_max		= dmaximum	
+
+		writeveca("Zfwd_normalize")
+
+		fprint("cZfwd_min		= %2.4f\n",cZfwd_min*1e5)
+		fprint("cZfwd_max		= %2.4f\n",cZfwd_max*1e5)
+		fprint("cRfwd_min		= %2.4f\n",cRfwd_min*1e5)
+		fprint("cRfwd_max		= %2.4f\n",cRfwd_max*1e5)
+		fprint("caZfwd_min		= %2.4f\n",caZfwd_min*1e5)
+		fprint("caZfwd_max		= %2.4f\n",caZfwd_max*1e5)
+		fprint("caRfwd_min		= %2.4f\n",caRfwd_min*1e5)
+		fprint("caRfwd_max		= %2.4f\n",caRfwd_max*1e5)
+
+		wopen()
+	}
+
+
+
+
+
+
+
+
+
+

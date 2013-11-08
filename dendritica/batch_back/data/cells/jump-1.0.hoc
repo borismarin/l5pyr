@@ -1,0 +1,28 @@
+/* an unbranched cable with no jump in diameter */
+
+create soma, dend1, dend2
+
+soma {
+	L = 20
+	nseg = 10
+	diam = 20
+}
+
+dend1 {
+	L = 2500
+	nseg = 250
+	diam = 1
+}
+
+dend2 {
+	L = 2500
+	nseg = 250
+	diam = 1.0
+}
+
+soma connect dend1(0), 1
+dend1 connect dend2(0), 1
+
+define_shape()
+
+synthetic = 1  /* needed for simulation */

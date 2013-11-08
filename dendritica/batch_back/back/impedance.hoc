@@ -1,0 +1,515 @@
+/* Relating dendritic geometry and signal propagation   */
+/* impedance.hoc Version 1.0                            */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+proc impedance_calc() {local i,k  /* get all the data for impedance */
+
+	reset()
+	sim_set(threshold_dur)
+	simMode = 1   			// everything runs in voltage clamp
+	remove_axon() 
+ 	// get_APfrequencies() 		// 27.4.99 PV replaced by:
+
+	sim()				// run simulation to get tpeak_pk, onset_pk
+	peaktimes = new Vector()
+	segnum = new Vector()
+	forsec all f_pk = 250
+	forsec all for k =0,nseg-1 { peaktimes.append(tpeak_pk((k+.5)/nseg)) segnum.append(k+1)}
+
+	rest(1) // removes electrodes!
+	seglist = new SectionList()
+	forsec all   for i = 1,nseg { impedance_mismatch(i) 	// passive mismatch
+				      seglist.append() this_section() } 
+	rest()
+	dt        = sim_dt					// active mismatch
+	while (t<(sim_durI+sim_dur)) { if (peaktimes.contains(t)) impedance_check() 
+				       fadvance() }
+
+	define_shape()
+	origin.sec distance(0,originx) 	// otherwise distance measurements will go haywire
+
+	Zfrequency.resize(0)
+
+	Rmismatch.resize(0)
+	Zmismatch.resize(0)
+	aRmismatch.resize(0)
+	aZmismatch.resize(0)
+
+	Rback.resize(0)
+	Zback.resize(0)
+	aRback.resize(0)
+	aZback.resize(0)
+
+	Rfwd.resize(0)
+	Zfwd.resize(0)
+	aRfwd.resize(0)
+	aZfwd.resize(0)
+
+	R2.resize(0)
+	Z.resize(0)
+	aR.resize(0)
+	aZ.resize(0)
+	print "got to all_noend"
+	forsec all_noend   {  Zfrequency.append(f_pk)
+			    for k = 0,nseg-1 { 	i = (k+.5)/nseg
+					  	Rmismatch.append(Rmismatch_pk(i))
+					  	Zmismatch.append(Zmismatch_pk(i))
+					  	aRmismatch.append(aRmismatch_pk(i))
+					  	aZmismatch.append(aZmismatch_pk(i)) 
+
+					     	Rback.append(Rback_pk(i))
+					     	Zback.append(Zback_pk(i))
+					     	aRback.append(aRback_pk(i))
+					     	aZback.append(aZback_pk(i))
+
+					     	Rfwd.append(Rfwd_pk(i))
+					     	Zfwd.append(Zfwd_pk(i))
+					     	aRfwd.append(aRfwd_pk(i))
+					     	aZfwd.append(aZfwd_pk(i))
+
+					     	R2.append(R_pk(i))
+					     	Z.append(Z_pk(i))
+					     	aR.append(aR_pk(i))
+					     	aZ.append(aZ_pk(i))	}}
+	if (Zfrequency.size()==0)	{
+   	Zmismatch_peak_noend 	= 0
+   	Rmismatch_peak_noend 	= 0
+   	aZmismatch_peak_noend 	= 0
+   	aRmismatch_peak_noend 	= 0
+  	Zmismatch_mean_noend 	= 0
+   	Rmismatch_mean_noend 	= 0
+   	aZmismatch_mean_noend 	= 0
+   	aRmismatch_mean_noend 	= 0
+	} else {
+   	Zmismatch_peak_noend 	= Zmismatch.max
+   	Rmismatch_peak_noend 	= Rmismatch.max
+   	aZmismatch_peak_noend 	= aZmismatch.max
+   	aRmismatch_peak_noend 	= aRmismatch.max
+   	Zmismatch_mean_noend 	= Zmismatch.mean
+   	Rmismatch_mean_noend 	= Rmismatch.mean
+   	aZmismatch_mean_noend 	= aZmismatch.mean
+   	aRmismatch_mean_noend 	= aRmismatch.mean
+	}
+
+	Zfrequency.resize(0)
+	Rmismatch.resize(0)
+	Zmismatch.resize(0)
+	aRmismatch.resize(0)
+	aZmismatch.resize(0)
+
+	Rback.resize(0)
+	Zback.resize(0)
+	aRback.resize(0)
+	aZback.resize(0)
+
+	Rfwd.resize(0)
+	Zfwd.resize(0)
+	aRfwd.resize(0)
+	aZfwd.resize(0)
+
+	R2.resize(0)
+	Z.resize(0)
+	aR.resize(0)
+	aZ.resize(0)
+
+	forsec all {  Zfrequency.append(f_pk)
+			    for k = 1,nseg { 	i = (k-.5)/nseg
+						  	Rmismatch.append(Rmismatch_pk(i))
+						  	Zmismatch.append(Zmismatch_pk(i))
+						  	aRmismatch.append(aRmismatch_pk(i))
+						  	aZmismatch.append(aZmismatch_pk(i)) 
+
+						     	Rback.append(Rback_pk(i))
+						     	Zback.append(Zback_pk(i))
+						     	aRback.append(aRback_pk(i))
+						     	aZback.append(aZback_pk(i))
+
+						     	Rfwd.append(Rfwd_pk(i))
+						     	Zfwd.append(Zfwd_pk(i))
+						     	aRfwd.append(aRfwd_pk(i))
+						     	aZfwd.append(aZfwd_pk(i))
+
+						     	R2.append(R_pk(i))
+						     	Z.append(Z_pk(i))
+						     	aR.append(aR_pk(i))
+						     	aZ.append(aZ_pk(i))	}}
+	   	Zmismatch_peak 		= Zmismatch.max
+	   	Rmismatch_peak 		= Rmismatch.max
+	   	aZmismatch_peak 	= aZmismatch.max
+	   	aRmismatch_peak 	= aRmismatch.max
+	   	Zmismatch_mean 		= Zmismatch.mean
+    	 	Rmismatch_mean 		= Rmismatch.mean
+    	  	aZmismatch_mean 	= aZmismatch.mean
+	   	aRmismatch_mean 	= aRmismatch.mean
+		
+		get_Zfwdvalues(1)
+		Zfwd_min		= minimum
+		Zfwd_max		= maximum
+		dZfwd_min		= dminimum
+		dZfwd_max		= dmaximum
+
+		get_Zfwdvalues(2)
+		Rfwd_min		= minimum
+		Rfwd_max		= maximum
+		dRfwd_min		= dminimum
+		dRfwd_max		= dmaximum
+
+		get_Zfwdvalues(3)
+		aZfwd_min		= minimum
+		aZfwd_max		= maximum
+		daZfwd_min		= dminimum
+		daZfwd_max		= dmaximum
+
+		get_Zfwdvalues(4)
+		aRfwd_min		= minimum
+		aRfwd_max		= maximum
+		daRfwd_min		= dminimum
+		daRfwd_max		= dmaximum	
+
+		writeveca("frequency",Zfrequency) // these vectors are all electro-independent
+		writeveca("Zmismatch",Zmismatch)
+		writeveca("Rmismatch",Rmismatch)
+		writeveca("Zback",Zback)
+		writeveca("Rback",Rback)
+		writeveca("Rfwd",Rfwd)
+		writeveca("Zfwd",Zfwd)
+		writeveca("Z",Z)
+		writeveca("R2",R2)
+		writeveca("aZmismatch",aZmismatch)
+		writeveca("aRmismatch",aRmismatch)
+		writeveca("aZback",aZback)
+		writeveca("aRback",aRback)
+		writeveca("aZfwd",aZfwd)
+		writeveca("aRfwd",aRfwd)
+		writeveca("aZ",aZ)
+		writeveca("aR",aR)
+
+		print "impedanc_calc done"
+
+                	}
+
+/********************************************************************************************/
+
+proc impedance_mismatch() { local initial,terminal,i,k,rback,rfwd,rtot,zback,zfwd,ztot 
+	/* calculates mismatch for a given segment */
+	/* calculate all impedance values for all segments within the section */
+	/* this is really the core procedure */
+
+	seg	= $1
+	xpos 	= (seg-.5)/nseg  
+
+	if (seg==nseg) 	terminal = 1 else terminal = 0
+	if (seg==1) 	initial  = 1 else initial  = 0
+
+	gpas	= new Vector(nseg)
+      	cmem	= new Vector(nseg)
+	gna	= new Vector(nseg)
+      	gk	= new Vector(nseg)
+
+	for i = 0,nseg-1 { 	k = (i+.5)/nseg
+				gpas.x[i] = g_pas(k)
+				cmem.x[i] = cm(k)
+				gna.x[i] = gbar_na(k)
+				gk.x[i] = gbar_kv(k)}
+
+   	rtot =	imp_calc(0,xpos)
+   	ztot =	imp_calc(f_pk,xpos)
+
+	get_children()
+	forsec children disconnect()			// disconnect parent-child
+   	if (!terminal) switch_off_intra(seg+1,nseg)	//                         _/ child
+	rback =	imp_calc(0,xpos)			//      grandparent--parent_
+	zback =	imp_calc(f_pk,xpos)			//                          \ child
+	if (!terminal) switch_on_intra(seg+1,nseg)
+	switch_on()
+									
+	paconn = parent_connection()			// disconnent grandparent-parent
+	secor  = section_orientation()
+	get_parent()					
+	if (!root) disconnect()				
+   	if (!initial) switch_off_intra(1,seg-1)
+   	rfwd =	imp_calc(0,xpos)
+   	zfwd =	imp_calc(f_pk,xpos)
+        if (!initial) switch_on_intra(1,seg-1)
+
+
+	// reconnect grandfather-father
+   	if (!root) Parent.sec connect parentref.sec(secor) , paconn 
+
+	// set section - if numarg() == 2 passive, else active			
+	if (numarg() == 1) { Rmismatch_pk(xpos) = rback/rfwd	
+			     Zmismatch_pk(xpos) = zback/zfwd 
+			     Rback_pk(xpos)	= rback
+			     Zback_pk(xpos)	= zback
+			     Rfwd_pk(xpos)	= rfwd
+			     Zfwd_pk(xpos)	= zfwd
+			     R_pk(xpos)		= rtot
+			     Z_pk(xpos)		= ztot		} else { 
+			     aRmismatch_pk(xpos) = rback/rfwd
+			     aZmismatch_pk(xpos) = zback/zfwd 
+			     aRback_pk(xpos)	= rback
+			     aZback_pk(xpos)	= zback
+			     aRfwd_pk(xpos)	= rfwd
+			     aZfwd_pk(xpos)	= zfwd
+			     aR_pk(xpos)	= rtot
+			     aZ_pk(xpos)	= ztot		}
+	}
+
+/********************************************************************************************/
+
+proc switch_off_intra()     {	local i,k 
+				for i = $1,$2   { k = (i-.5)/nseg
+						  g_pas(k) 	= 0   // intra-sectional
+						  cm(k)    	= 0  
+						  gbar_na(k)    = 0  
+						  gbar_kv(k)    = 0 } 
+			    }
+
+/********************************************************************************************/
+
+proc switch_on_intra()      {   local i,k
+				for i = $1,$2   { k = (i-.5)/nseg
+						  g_pas(k) 	= gpas.x[i-1]
+						  cm(k)    	= cmem.x[i-1] 
+						  gbar_na(k)    = gna.x[i-1]  
+						  gbar_kv(k)    = gk.x[i-1] } }
+
+/********************************************************************************************/
+
+proc get_children()   { /* children of a given section are put into list children */
+			children = new SectionList()
+			subtree_traverse("children.append() secname()")
+			ch_connection = new Vector()
+			pa_connection = new Vector()
+			forsec children      { 	ch_connection.append(section_orientation())
+						pa_connection.append(parent_connection()) }
+		      }
+
+/********************************************************************************************/
+
+proc switch_on()         {	/* reattaches children to parent */
+		d = 0
+		this_section() parentref = new SectionRef()
+		forsec children {
+		  this_section() childvar = new SectionRef()
+		  parentref.sec connect childvar.sec(ch_connection.x[d]),pa_connection.x[d]
+			d+=1    }	  
+			 }
+
+/********************************************************************************************/
+
+func imp_calc() 	{/* return impedance for given section at location $2 & frequency $1*/
+			imp = new Impedance()
+		  	imp.loc($2)
+			imp.compute($1)
+			Zin = imp.input($2)
+			return Zin
+			}
+
+/********************************************************************************************/
+
+proc impedance_check()  {local i /* checks whether at time t any section has its tpeak
+			 if yes, calculate the active impedances for that t and section */
+
+	selection.indvwhere(peaktimes,"==",t)
+	ref = segnum.ind(selection)
+	i = 0
+	branchselection = new SectionList()
+	forsec seglist{if (selection.contains(i)) branchselection.append() this_section() 
+			   i+=1 }
+	if (i>0) { i=0
+
+	inactive vclamp.loc(0)  // take out electrode until rest is achieved
+	inactive st.loc(0)
+	inactive synapse.loc(0)
+
+	forsec branchselection { impedance_mismatch(ref.x[i],"active")  i+=1}
+
+			Iclamp.sec st.loc(Iclampx) 
+			Vclamp.sec vclamp.loc(Vclampx) 
+			Synapse.sec synapse.loc(Synapsex) 
+		}
+			}
+
+/********************************************************************************************/
+
+proc get_Zfwdvalues() { local Imn,Imx,n, i, k, j
+
+	if (numarg()>0) n = $1 else n = 1
+
+	origin.sec distance(0,originx)
+	ref2 = new Vector()
+	ref = new Vector()
+	forsec dendrites {  for k = 1,nseg { 	i = (k-.5)/nseg
+						if (n==1) ref.append(Zfwd_pk(i))
+						if (n==2) ref.append(Rfwd_pk(i))
+						if (n==3) ref.append(aZfwd_pk(i))
+						if (n==4) ref.append(aRfwd_pk(i))
+					  	ref2.append(distance(i)) }}
+
+	sort(ref2,ref)            // sort impedance values by distance from soma
+
+	histx = new Vector()
+	histx.where(v2,">",0)     // find impedance values > 0 
+	minimum = histx.min
+	Imn     = histx.indwhere("==",histx.min)
+	histx.c(0,histx.indwhere("==",histx.min))
+	maximum = histx.max
+	Imx     = histx.indwhere("==",histx.max)
+
+	v2.deriv().div(v1.c.deriv())
+	histx = v2.c
+	//	histx.where(v2,">",0)     // find impedance values >0 
+	dminimum = histx.min
+	Imn     = histx.indwhere("==",histx.min)
+
+	histx.c(0,histx.indwhere("==",histx.min)) 
+
+	dmaximum = histx.max
+	Imx     = histx.indwhere("==",histx.max)
+
+	/* the problem are terminal branches, that can appear anywhere. */
+	/* the only safe bet is to look at Zfwd minimum */
+}
+
+
+proc get_cZ() { local Imn,Imx,n, i, k, j
+
+	if (numarg()>0) n = $1 else n = 1
+
+	origin.sec distance(0,originx)
+	ref2 = new Vector()
+	ref = new Vector()
+	forsec dendrites {  for k = 1,nseg { 	i = (k-.5)/nseg
+						if (n==1) ref.append(Zfwd_pk(i))
+						if (n==2) ref.append(Rfwd_pk(i))
+						if (n==3) ref.append(aZfwd_pk(i))
+						if (n==4) ref.append(aRfwd_pk(i))
+						if (ref.x[ref.size-1]==0) { 
+						ref.resize(ref.size-1) } else {ref2.append(distance(i))}
+					}}
+
+	sort(ref2,ref)            // sort impedance values by distance from soma
+				  // v1 distances | v2 Impedance
+
+	histx = new Vector()
+	histx.where(v2,">",0)     // find impedance values > 0 
+	minimum = histx.min
+	Imn     = histx.indwhere("==",histx.min)
+	histx.c(0,histx.indwhere("==",histx.min))
+	maximum = histx.max
+	Imx     = histx.indwhere("==",histx.max)
+
+	ref2=v2.c
+	v2.deriv().div(v1.c.deriv()).div(ref2)
+
+//	histx.where(v2,">",0)     // find impedance values >0 
+	histx = v2.c
+	dminimum = histx.min
+	Imn     = histx.indwhere("==",histx.min)
+
+	histx.c(0,histx.indwhere("==",histx.min)) 
+
+	dmaximum = histx.max
+	Imx     = histx.indwhere("==",histx.max)
+
+	/* the problem are terminal branches, that can appear anywhere. */
+	/* the only safe bet is to look at Zfwd minimum */
+}
+
+
+
+
+
+
+
+
+
+//--------------------------------------------------------
+// Fit AP rising phase
+//--------------------------------------------------------
+
+
+proc get_APfrequencies() {	local i
+
+		sim()			// run simulation to get tpeak_pk, onset_pk
+
+
+		peaktimes.resize(0)
+		segnum.resize(0)
+		forsec dendrites    for k = 0,nseg-1 { peaktimes.append(tpeak_pk((k+.5)/nseg)) 
+						       segnum.append(k+1)}
+
+		i = 0				
+		forsec dendrites  { trec[i] = new Vector()	// set recording vectors
+			 	    vrec[i] = new Vector()
+		    if (tpeak_pk - onset_pk >= 0.025) {		// AR 25.12.98
+					trec[i].indgen(onset_pk,tpeak_pk+0.001,0.025)	//
+				    } else {					//
+					trec[i] = new Vector(1,onset_pk)	//
+				    }						//
+			 	    this_section() sref = new SectionRef()
+			 	    vrec[i].record(&sref.sec.v(0.5),trec[i])
+			 	    i+=1  }
+		sim()	       					// record AP rising phases 
+		i = 0
+		forsec dendrites { f_pk =  cosinefit(vrec[i],trec[i],0.025) 
+				   trec[i].play_remove()  // frees up memory
+				   vrec[i].play_remove()
+				   i += 1  }
+		if (printfunc) print "get_APfrequencies() done"
+			}
+
+
+
+
+
+func cosine()  	   {		return 0.5 - 0.5*cos(PI*freq*$1+phi) }        
+
+func cosinefxn()   { 		freq = $&2[0]
+				phi  = $&2[1]
+				tobj = ref.c
+				tobj.apply("cosine")	
+				return datavec.meansqerr(tobj)
+		   }
+
+
+func cosinefit() 	{ 	
+			 		/* ref ^= time */
+			param[0] = 1
+			param[1] = 0
+			
+			datavec = $o1.c
+			if (datavec.size() <= 1) return 0  // this is for non spiking sections
+			datavec.scale(0,1)
+			ref    	     = $o2.c
+			ref.sub($o2.min)
+			timestep     = $3
+
+		        attr_praxis(1e-7,2,0)
+                       	fit_praxis(2,"cosinefxn",&param[0])
+		//      print "frequency ", abs(freq*1000/2), "Hz"
+			return abs(freq*500)
+
+		}
+
+
+
+
+

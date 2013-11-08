@@ -1,0 +1,15 @@
+halfdecay_min         = 2.28797
+halfdecay_minlocation = "dendrite[106](0.0027316)"
+halfdecay_max         = 869.592
+halfdecay_maxlocation = "apical_dendrite[14](0.960135)"
+halfdecay_mean        = 125.828
+ap200_min             = 0.00574866
+ap200_minlocation     = "dendrite[95](0.450074)"
+ap200_max             = 1.3053
+ap200_maxlocation     = "apical_dendrite[12](0)"
+ap200_mean            = 0.28381
+apsoma_min            = 3.34698e-05
+apsoma_minlocation    = "apical_dendrite[109](0.984066)"
+apsoma_max            = 1.14425
+apsoma_maxlocation    = "apical_dendrite[51](0.264431)"
+apsoma_mean           = 0.047337

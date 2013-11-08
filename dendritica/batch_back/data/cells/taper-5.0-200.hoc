@@ -1,0 +1,35 @@
+/* an unbranched cable with taper in diameter */
+
+create soma, dend1, dend2, dend3
+
+soma {
+	L = 20
+	nseg = 10
+	diam = 20
+}
+
+dend1 {
+	L = 2500
+	nseg = 250
+	diam = 1
+}
+
+dend2 {
+	L = 200
+	nseg = 20
+	diam(0:1) = 1.0:5.0
+}
+
+dend3 {
+	L = 2300
+	nseg = 230
+	diam = 5.0
+}
+
+soma connect dend1(0), 1
+dend1 connect dend2(0), 1
+dend2 connect dend3(0), 1
+
+define_shape()
+
+synthetic = 1  /* needed for simulation */

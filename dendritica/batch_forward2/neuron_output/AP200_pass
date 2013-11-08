@@ -1,0 +1,10 @@
+AP200_pass act0
+cell type     	 mean	         stdev	          stderr
+Pyramidal    	  0.3478	  0.0320	  0.0131
+Nigra        	  0.3140	  0.0421	  0.0211
+Purkinje     	  0.0812	  0.0645	  0.0288
+DG granule   	  0.3189	  0.0537	  0.0219
+DG inter     	  0.2522	  0.0572	  0.0234
+CA1 Pyramidal	  0.2704	  0.0721	  0.0360
+CA3 Pyramidal	  0.3037	  0.0609	  0.0272
+CA3 inter    	  0.3966	  0.0811	  0.0363

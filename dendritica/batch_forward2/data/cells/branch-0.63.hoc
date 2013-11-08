@@ -1,0 +1,35 @@
+/* cable with single Rall branch */
+
+create soma, dend1, dend11, dend12
+
+soma {
+	L = 20
+	nseg = 10
+	diam = 20
+}
+
+dend1 {
+	L = 2500
+	nseg = 250
+	diam = 1
+}
+
+dend11 {
+	L = 2500
+	nseg = 250
+	diam = 0.6299605249474366
+}
+
+dend12 {
+	L = 2500
+	nseg = 250
+	diam = 0.6299605249474366
+}
+
+soma connect dend1(0), 1
+dend1 connect dend11(0), 1
+dend1 connect dend12(0), 1
+
+define_shape()
+
+synthetic = 1  /* needed for simulation */

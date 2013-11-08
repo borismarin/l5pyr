@@ -1,0 +1,259 @@
+/* Relating dendritic geometry and signal propagation   */
+/* neuronprefs.hoc Version 1.0                          */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+proc add_cell() {
+
+	/* $s1 strdef "p18" */
+	/* $s2        "p18.hoc" */
+	/*	celladdress	/Nigra2a955-1.nrn */
+	/*	cell		../data/cells/Nigra2a955-1.nrn */
+	/*	cellname	Nigra 2  */
+	/* add_cell("asp","/lcAS3.hoc","Aspiny L3",1,"soma")  */
+
+	{sprint(str1,"objref %s",$s1) 					execute(str1)}
+	{sprint(str1,"%s              = new MyCell()",$s1)		execute(str1)}
+	{sprint(str1,"%s.loc          = \"../data/cells/%s\"",$s1,$s2)	execute(str1)}		
+	{sprint(str1,"%s.tag          = \"/%s\"",$s1,$s2)		execute(str1)}		
+	{sprint(str1,"%s.n            = \"%s\"",$s1,$s3)		execute(str1)}		
+	{sprint(str1,"%s.spinescale   = %f",$s1,$4) 			execute(str1)}		
+	{sprint(str1,"%s.somatic      = \"%s\"",$s1,$s5)		execute(str1)}
+	if (numarg()>5) str1 = $s6 else str1 = ""
+	{sprint(str1,"%s.distal       = \"%s\"",$s1,str1)		execute(str1)}
+     	if (strob.substr($s3,"Pyramidal")>-1) 		type = 0
+     	if (strob.substr($s3,"Nigra")>-1) 	  	type = 1
+     	if (strob.substr($s3,"Purkinje")>-1) 		type = 2
+     	if (strob.substr($s3,"DG granule cell")>-1) 	type = 3
+     	if (strob.substr($s3,"DG interneuron")>-1) 	type = 4
+     	if (strob.substr($s3,"CA1 Pyramidal")>-1) 	type = 5
+     	if (strob.substr($s3,"CA3 Pyramidal")>-1) 	type = 6
+     	if (strob.substr($s3,"CA3 interneuron")>-1) 	type = 7
+	{sprint(str1,"%s.type      = %d",$s1,type)			execute(str1)}
+
+		}
+
+add_cell("pjs","pjs.hoc","Pyramidal L5 Schiller",1.96,"somaA")
+add_cell("ca3d","l56b.hoc","CA3 Pyramidal 4",1.89,"soma[0]")
+add_cell("int4","n260.hoc","DG interneuron 4",1,"soma[0]")
+add_cell("P1","Rapp_cell1","Purkinje 1",100,"soma")
+add_cell("P20","P20.hoc","Purkinje 20",10,"soma")
+add_cell("pds","pds.hoc","Pyramidal L5 Smetters",1.96,"somaE")
+add_cell("gc5 ","claiborne1.hoc","DG granule cell 5",1.6,"soma")
+add_cell("gc6 ","claiborne2.hoc","DG granule cell 6",1.6,"soma")
+add_cell("gc7 ","claiborne3.hoc","DG granule cell 7",1.6,"soma")
+add_cell("gc8 ","claiborne4.hoc","DG granule cell 8",1.6,"soma")
+add_cell("l23","j8.hoc","Pyramidal L2/3",1,"soma")
+add_cell("p22","p22.hoc","Pyramidal L5 22",1.96,"somaC")
+add_cell("p21","p21.hoc","Pyramidal L5 21",1.96 ,"somaB")
+add_cell("p18","p18.hoc","Pyramidal L5 18",1.96 ,"somaA")
+add_cell("par","par.hoc","Pyramidal L5 Roth",1.96 ,"somaD")
+add_cell("n2","Nigra2a955-1.nrn","Nigra 2",1 ,"soma")
+add_cell("n11","Nigra11h941-1.nrn","Nigra 11",1,"soma")
+add_cell("n12","n12.hoc","Nigra 12",1,"somaA")
+add_cell("n24","n24.hoc","Nigra 24",1,"somaA")
+add_cell("P19","P19.hoc","Purkinje 19",10,"soma")
+add_cell("P2","Rapp_cell2","Purkinje 2",100,"soma")
+add_cell("P3","Rapp_cell3","Purkinje 3",100,"soma")
+add_cell("ca1a","n121.hoc","CA1 Pyramidal 1",1.89,"soma[0]")
+//add_cell("ca1b","n177.hoc","CA1 Pyramidal 2",1.89,"soma[0]")
+//add_cell("ca1c","n179.hoc","CA1 Pyramidal 3",1.89,"soma")
+//add_cell("ca1d","n403.hoc","CA1 Pyramidal 4",1.89,"soma[0]")
+//add_cell("ca1e","n404.hoc","CA1 Pyramidal 5",1.89,"soma[0]")
+//add_cell("ca1f","822.hoc","CA1 Pyramidal 6",1.89,"soma[0]")
+add_cell("ca1g","503c.hoc","CA1 Pyramidal 7",1.89,"soma")
+add_cell("ca1h","602c.hoc","CA1 Pyramidal 8",1.89,"soma")
+add_cell("ca1i","913c.hoc","CA1 Pyramidal 9",1.89,"soma")
+//add_cell("ca1j","n417.hoc","CA1 Pyramidal 10",1.89,"soma")
+//add_cell("ca3a","l10.hoc","CA3 Pyramidal 1",1.89,"soma[0]")
+add_cell("ca3b","l24b.hoc","CA3 Pyramidal 2",1.89,"soma[0]")
+add_cell("ca3c","l60a.hoc","CA3 Pyramidal 3",1.89,"soma[0]")
+//add_cell("ca3e","l48b.hoc","CA3 Pyramidal 5",1.89,"soma[1]")
+//add_cell("ca3f","l51.hoc","CA3 Pyramidal 6",1.89,"soma[5]")
+add_cell("ca3g","960924b.nrn","CA3 Pyramidal 7",1.89,"soma")
+add_cell("ca3h","970529c.nrn","CA3 Pyramidal 8",1.89 ,"soma")
+//add_cell("gc1 ","n270.hoc","DG granule cell 1",1.6 ,"soma[0]")
+//add_cell("gc2 ","n271.hoc","DG granule cell 2",1.6,"soma[0]")
+add_cell("gc3 ","n503.hoc","DG granule cell 3",1.6,"soma[0]")
+add_cell("gc4 ","n517.hoc","DG granule cell 4",1.6,"soma[0]")
+add_cell("int1","n257.hoc","DG interneuron 1",1,"soma[0]")
+add_cell("int2","n258.hoc","DG interneuron 2",1,"soma[0]")
+add_cell("int3","n259.hoc","DG interneuron 3",1,"soma[0]")
+
+add_cell("int5","n250.hoc","DG interneuron 5",1,"soma[0]")
+add_cell("int6","n262.hoc","DG interneuron 6",1,"soma[0]")
+//add_cell("ca3int1","960824a.nrn","CA3 interneuron 1",1,"soma[1]")
+add_cell("ca3int2","960210b.nrn","CA3 interneuron 2",1,"soma")
+add_cell("ca3int3","960217e.nrn","CA3 interneuron 3",1,"soma")
+add_cell("ca3int4","960816d.nrn","CA3 interneuron 4",1,"soma")
+add_cell("ca3int5","970213b.nrn","CA3 interneuron 5",1,"soma")
+add_cell("ca3int6","960427a.nrn","CA3 interneuron 6",1,"soma[1]")
+
+// add_cell("asp","lcAS3.hoc","Aspiny L3",1,"soma")
+// add_cell("ste","j7.hoc","Stellate  L4",1,"soma")
+
+
+printcellnameact = 1
+
+/********************************************************************/
+
+proc cell_name()  {	local n,i, f
+
+	f = -1
+	for i=0,CellList.count-1 { if (strcmp($s1,CellList.object(i).loc)==0) f=i }
+
+	if (f>-1) {
+	cellname = CellList.object(f).n
+	core     = CellList.object(f).loc
+	           }
+
+	set_suffix() 	/* adding suffixes */
+
+	if (strob.substr(cellname,suffix)==-1) 	sprint(cellname,"%s%s",cellname,suffix)    
+	sprint(cell,"%s%s",core,suffix)            // eg ../data/cells/P19.hocequiv
+	strob.tail(cell,"cells",celladdress)        // eg /P19.hocequiv
+
+	// equivalent cables are contingent on the active model, so they are stored in
+	// ../data/ActiveModel/equiv/celladdress
+	if (equiv) sprint(cell,"../data/%s/equiv%s",ActiveModel,celladdress)	         
+
+	activecell=cellname
+	sprint(cellnameact,"%s using %s conductances",activecell,actname)
+	if (printcellnameact) print cellnameact 
+
+		 }
+
+/********************************************************************/
+
+proc set_suffix() {
+
+if (numarg()==1) { suffix="" equiv=0 forward=0 hdecay=0 }
+
+if(forward){if (strob.substr(suffix,"forward200")==-1) sprint(suffix,"%sforward200",suffix)} 
+if(hdecay){strob.tail(core,"cells",celladdress) readveca("halfdecay") suffix=halfdecay_maxlocation}
+if (equiv){if (strob.substr(suffix,"equiv")==-1) sprint(suffix,"%sequiv",suffix)}
+
+		}
+
+/********************************************************************/
+
+proc set_spinedensity()  {	/* set spinescale (by hand for each neuron) */
+
+	spinescale    = 1
+	spinescaleII  = 1
+
+	for i=0,CellList.count-1 { if (strcmp($s1,CellList.object(i).loc)==0) f=i }
+
+	spinescale = CellList.object(f).spinescale
+
+	if (strob.substr($s1,P19.loc)>-1)  dendII()	/* special case Purkinje cells */
+	if (strob.substr($s1,P20.loc)>-1)  dendII()
+	if (strob.substr($s1,P1.loc)>-1)   dendIII()
+	if (strob.substr($s1,P2.loc)>-1)   dendIII()
+	if (strob.substr($s1,P3.loc)>-1)   dendIII()
+
+	if (equiv) spinescale = 1
+
+			spine_set()
+		}
+
+/**************************************************************/
+
+proc dendII() {		/* make SectionList dendrites II for Roth Purkinje cells */
+			spinescale   = 5.34 
+			spinescaleII = 1.2 
+			forsec cf          dendritesII.append()
+			forsec dendritesII dendritesI.remove()
+	      }
+
+/**************************************************************/
+
+proc dendIII() { 	/* make SectionList dendritesIII for Rapp cells */
+
+		//	forsec dendrites if (diam(0.5) <= 2.2) { dendritesIII.append()
+			spinescale   = 5.34 
+			spinescaleII = 1.2 
+			forsec dendrites if (diam(0.5) > 2.2)  { dendritesII.append()
+								 dendritesI.remove() }
+		//	spinescale = 1
+	       }
+
+/**************************************************************/
+
+proc swc_format() {	local a 
+			/* parsing step for neurons from Duke Southampton Archive */
+
+		        forsec "axon" disconnect()
+			forsec "axon" delete_section()
+			execute("soma[0] Soma = new SectionRef()")
+			a = 0
+			forsec "soma" for(x) a += area(x)
+			equivdiam = sqrt(a/(4*PI)) 
+			swc = 1		
+		  }
+
+/**************************************************************/
+
+proc make_sectionrefs() { local n, d, maxdist
+
+	n = numarg()
+
+	for i=0,CellList.count-1 { if (strcmp(cellname,CellList.object(i).n)==0) f=i }
+	
+	str1 = CellList.object(f).somatic  		/* define Soma */
+	if (equiv) str1 = "soma"
+	sprint(str1,"%s Soma = new SectionRef()",str1)
+	execute(str1)
+		
+       	maxdist  = 0					/* define Distal */
+	if (n==0) {
+		Soma.sec origin  = new SectionRef()
+		Soma.sec origins = secname()
+
+		originsec = new SectionList()
+		sprint(str1,"%s originsec.append()",origins)
+		execute(str1)
+
+		Soma.sec Iclamp  = new SectionRef()
+		Soma.sec Vclamp  = new SectionRef()
+		Soma.sec Synapse = new SectionRef()
+
+		
+
+		  }
+
+		origin.sec distance(0,originx)
+		all = new SectionList()
+		forall all.append()
+		forsec "node" all.remove()
+		forsec "myelin" all.remove()
+		forsec "iseg" all.remove()
+		forsec "hill" all.remove()
+
+		forsec all { d = distance(0.5)	
+			      if (d > maxdist) { maxdist = d
+					   	 this_section() Distal = new SectionRef() }  }
+
+		if (!equiv) { 
+		if (strcmp(cell,p18.loc)==0) execute("dendA[184]          Distal=new SectionRef()")
+		if (strcmp(cell,p21.loc)==0) execute("dendB[232]           Distal=new SectionRef()")
+		if (strcmp(cell,p22.loc)==0) execute("dendC[134]           Distal=new SectionRef()")
+		if (strcmp(cell,pds.loc)==0) execute("dendE9[78]           Distal=new SectionRef()")
+		if (strcmp(cell,par.loc)==0) execute("dendD7_0111111111111 Distal=new SectionRef()")
+			    }
+		}

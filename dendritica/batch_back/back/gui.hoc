@@ -1,0 +1,1237 @@
+/* Relating dendritic geometry and signal propagation   */
+/* gui.hoc Version 1.0                                  */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+
+xopen("init.hoc")
+
+/*********************************************************
+ GUI Graphical User Interface
+ *********************************************************/
+
+proc Main() { 
+/* Calls main panel and allows */
+/* - Loading a cell */
+/* - Clearing the Screen */
+/* - Plotting various Graphs */
+/* - Loading other Panels */
+/* - Miscellaneous */
+/* - Quit */
+
+	xpanel("Main")
+		xbutton("Load Neuron","Load_cell()")
+		xbutton("Clear Screen","clf()")
+		Graph_menu()
+
+		xmenu("Other Panels")
+		 xbutton("Electrophysiology","Electrophysiology()")
+		 xbutton("Statistics","Statistics()")
+		 xbutton("Channels","Conductances()")
+		 xbutton("Simulation settings","Simulation()")
+		 xbutton("Geometry","Geometry()")
+		xmenu()
+
+			/* copied from "graphpanel" */
+
+		xmenu("Miscellaneous")
+
+		 xmenu("Clipboard")
+		  xbutton("Save to File","load_proc(\"clipboard_save\") clipboard_save()")
+		  xbutton("Retrieve from File","load_proc(\"clipboard_retrieve\") clipboard_retrieve()")
+		  xbutton("Gather Values","load_template(\"GatherVec\") makeGatherVec()")
+		  xbutton("Vector Play","load_template(\"VectorPlay\") makeVectorPlay()")
+		  xbutton("Vector Wrapper","load_template(\"VecWrap\") makeVecWrap()")
+		 xmenu()
+
+		 xmenu("Family")
+		  xbutton("Family","load_template(\"Family\") makeFamily()")
+		  xbutton("Command","load_template(\"ExecCommand\") newcommand()")
+		 xmenu()
+
+		xbutton("Parameterized Function","load_template(\"FunctionFitter\") makefitter()")
+		xbutton("Run Fitter","load_template(\"RunFitter\") makerunfitter()")
+
+		xmenu("Impedance")
+		 xbutton("Frequency","load_template(\"ImpedanceRatio\") makeImpRatio()")
+		 xbutton("Path","load_template(\"Impx\") makeImpx()")
+		 xbutton("log(A) vs x","load_template(\"LogAvsX\") makelogax()")
+		 xbutton("Shape","load_template(\"ImpShape\") makeImpShape()")
+		xmenu()
+
+		xmenu("Viewers")
+		 xbutton("Shape Name","load_template(\"MenuExplore\") makeMenuExplore()")
+		 xbutton("Name Values","nrnallsectionmenu()")
+		 xmenu("Mechanisms (Globals)")
+		  xbutton("na_ion","nrnglobalmechmenu(\"na_ion\")")
+		  xbutton("k_ion","nrnglobalmechmenu(\"k_ion\")")
+		  xbutton("hh","nrnglobalmechmenu(\"hh\")")
+		  xbutton("ca_ion","nrnglobalmechmenu(\"ca_ion\")")
+		  xbutton("ca","nrnglobalmechmenu(\"ca\")")
+		  xbutton("cad","nrnglobalmechmenu(\"cad\")")
+		  xbutton("kca","nrnglobalmechmenu(\"kca\")")
+		  xbutton("km","nrnglobalmechmenu(\"km\")")
+		  xbutton("kv","nrnglobalmechmenu(\"kv\")")
+		  xbutton("na","nrnglobalmechmenu(\"na\")")
+		 xmenu()
+		xmenu()
+
+		xmenu("Point Processes")
+		 xbutton("IClamp","makePointBrowser(\"IClamp\")")
+		 xbutton("SEClamp","makePointBrowser(\"SEClamp\")")
+		 xbutton("AlphaSynapse","makePointBrowser(\"AlphaSynapse\")")
+		 xbutton("syn2","makePointBrowser(\"syn2\")")
+		 xbutton("TrigKSyn","makePointBrowser(\"TrigKSyn\")")
+		 xbutton("SEClamp","makePointBrowser(\"SEClamp\")")
+		 xbutton("VClamp","makePointBrowser(\"VClamp\")")
+		 xbutton("APCount","makePointBrowser(\"APCount\")")
+		xmenu()
+
+		xmenu("Distributed Mechanisms")
+		 xmenu("Managers")
+		  xbutton("Inserter","load_template(\"Inserter\") makeinserter()")
+		  xbutton("Homogeneous Spec","load_proc(\"makeshowmechanism\") makeshowmechanism()")
+		 xmenu()
+		xmenu()
+
+	xmenu()
+		xbutton("Quit","quit()")
+		xpanel(400,0)
+
+		// Conductances()
+		
+		}
+
+proc Geometry() { 
+/* Calls Geometry panel and allows */
+/* - Removing/Adding an Axon to cell */
+/* - Calculate Geometric parameters */
+/* - Shape Name */
+
+		vbox1 = new VBox()
+		vbox1.intercept(1)
+
+	xpanel("1",1)
+		xbutton("Remove Axon","remove_axon()")
+		xbutton("Connext Axon","clf()")
+	xpanel()	
+	xpanel("1",1)
+		 xbutton("Recalculate Geometry","geometry_calc()")
+		 xbutton("Shape Name","load_template(\"MenuExplore\") makeMenuExplore()")
+
+
+	xpanel(400,0)
+
+
+		vbox1.intercept(0)
+		vbox1.map("Geometry",800,300,300,25)
+
+
+		}
+
+
+
+proc Conductances() {
+/* Calls Conductances panel and allows */
+/* - setting of passive membrane properties */
+/* - setting of channel parameters */
+/* - setting of nonuniform passive membrane parameters */
+
+		xpanel("Conductances", 0)
+		xpvalue("Ra",&rax,1,"passive_set(rm,rax,c_m,cm_myelin,rm_node,rm_end,rm_steep,rm_half)")
+		xpvalue("Rm",&rm,1,"passive_set(rm,rax,c_m,cm_myelin,rm_node,rm_end,rm_steep,rm_half)")
+		xpvalue("cm",&c_m,1,"passive_set(rm,rax,c_m,cm_myelin,rm_node,rm_end,rm_steep,rm_half)")
+		xpvalue("gkv",&g_kv,1,"active_set(g_na,g_kv,g_nanode,g_kvnode)")
+		xpvalue("gna",&g_na,1,"active_set(g_na,g_kv,g_nanode,g_kvnode)")
+		xpvalue("gkv (node)",&g_kvnode,1,"active_set(g_na,g_kv,g_nanode,g_kvnode)")
+		xpvalue("gna (node)",&g_nanode,1,"active_set(g_na,g_kv,g_nanode,g_kvnode)")
+		if (Ca_current)  xpvalue("gca",&g_ca,1,"ca_set(g_ca)")
+		if (KCa_current) xpvalue("gkca",&g_kca,1,"kca_set(g_kca)")
+		if (Km_current)  xpvalue("gkm",&g_km,1,"km_set(g_km)")
+		xbutton("Nonuniform","Nonuniform()")
+		xpanel(950,0)
+                 }
+
+
+proc Simulation() {
+/* Calls Simulation panel and allows */
+/* - Simulation duration,dt,recording delay */
+/* - Stimulus electrode amplitude, delay & duration */
+/* - Recording (for plotting purposes) duration, delay, dt */
+
+		xpanel("Simulation", 0)
+		xpvalue("rec dur",&rec_dur,1,"rec_set(rec_del,rec_dur,rec_dt)")
+		xpvalue("rec del",&rec_del,1,"rec_set(rec_del,rec_dur,rec_dt)")
+		xpvalue("rec dt",&rec_dt,1,"rec_set(rec_del,rec_dur,rec_dt)")
+		xpvalue("stim amp",&st_amp,1,"st_set(st_amp,st_del,st_dur)")
+		xpvalue("stim del",&st_del,1,"st_set(st_amp,st_del,st_dur)")
+		xpvalue("stim dur",&st_dur,1,"st_set(st_amp,st_del,st_dur)")
+		xpvalue("sim dur",&sim_dur,1,"sim_set(sim_dur,sim_dt,sim_durI,sim_dtI)")
+		xpvalue("sim dt",&sim_dt,1,"sim_set(sim_dur,sim_dt,sim_durI,sim_dtI)")
+		xpvalue("sim durI",&sim_durI,1,"sim_set(sim_dur,sim_dt,sim_durI,sim_dtI)")
+		xpvalue("sim dtI",&sim_dtI,1,"sim_set(sim_dur,sim_dt,sim_durI,sim_dtI)")
+		xpanel(950,270)
+                 }
+
+proc Nonuniform() {
+/* Calls Nonuniform panel and allows */
+/* - setting of nonuniform passive membrane properties */
+		nonuniform_Rm = 1
+		xpanel("Nonuniform", 0)
+		xlabel("nonuniformity")
+		xpvalue("rm",&rm,1,"passive_set(rm,rax,c_m,cm_myelin,rm_node,rm_end,rm_steep,rm_half)")
+		xpvalue("rm_end",&rm_end,1,"passive_set(rm,rax,c_m,cm_myelin,rm_node,rm_end,rm_steep,rm_half)")
+		xpvalue("rm_steep",&rm_steep,1,"passive_set(rm,rax,c_m,cm_myelin,rm_node,rm_end,rm_steep,rm_half)")
+		xpvalue("rm_half",&rm_half,1,"passive_set(rm,rax,c_m,cm_myelin,rm_node,rm_end,rm_steep,rm_half)")
+		xpanel(1050,270)
+                 }
+
+
+
+
+
+proc Electrophysiology() {
+/* Calls Electrophysiology panel and allows */
+/* - voltage clamping [press "voltage clamp"] */
+/* - resetting location, scaling, and chosing waveform to be played */
+/* - current clamping [press "current clamp"] */
+/* - resetting location, amplitude of current */
+/* - synaptic activation [press "synapse"] */
+/* - resetting location, parameters of synapse */
+
+
+
+		vbox1 = new VBox()
+		vbox1.intercept(1)
+		xpanel("yo",1)
+			xvarlabel(cellnameact)
+			xcheckbox("movie",&movie)
+		xpanel()
+
+		xpanel("Voltage Clamp", 1)
+			xbutton("Voltage Clamp","gactive_run(1)")
+			xbutton("Location","PointLocator(0)")
+			xpvalue("scaling",&VClampScale)
+			xmenu("Waveform")
+			 xbutton("somatic AP (p18)","set_waveform()")
+			 xbutton("dendritic AP (p21)","set_waveform(\"dendspike_p21\",1)")
+			 xbutton("currently picked waveform","set_waveform(hoc_obj_[0])")
+			 xbutton("load waveform...","set_waveform(\"dendspike_p21\",1,1)")
+			xmenu()
+		xpanel()
+
+		xpanel("Current Clamp",1)
+			xbutton("Current Clamp","gactive_run(0)")
+			xbutton("Location","PointLocator(1)")
+			xpvalue("Amplitude",&st_amp,1,"st_set(st_amp,st_del,st_dur)")
+		xpanel()
+
+		xpanel("Synaptic",1)
+			xbutton("Synapse","gactive_run(5)")
+			xbutton("Location","PointLocator(2)")
+			xpvalue("gmax",&synapse_gmax,0.1,"set_synapse(synapse_gmax,synapse_tau0,synapse_tau1,synapse_onset,synapse_e)")
+		xpanel()
+
+		xpanel("other",1)
+		xbutton("Input Resistance","rinput_calc()")
+		xbutton("g_na threshold","threshold_find()")
+		xvarlabel(Nathreshold)
+		xpanel()
+
+		vbox1.intercept(0)
+		vbox1.map("Electrophysiology",500,0,400,180)
+		}
+
+
+proc Statistics() { local i
+/* Calls Statistics panel and allows */
+/* [get_data] load simulation results for analysis */
+/* [legend] plot legend of the different cell-types (see below) */
+/* [Average] print cell-type averaged values of the parameter specified under [y] */
+/* [Single] correlate parameter specified under [y] with [x1] */
+/* [Double] correlate parameter specified under [y] with combination of [x1]&[x2] */ 
+/* [Triple] correlate parameter specified under [y] with combination of [x1]&[x2]&[x3] */ 
+/* [x powers] specifies whether correlations are optimized w.r.t  power of x1 */ 
+
+
+		vbox1 = new VBox()
+		vbox1.intercept(1)
+
+		xpanel("Ho",1)
+		 xbutton("Get Data","Getdata()")
+		 xbutton("Legend","clegend()")
+		 xvarlabel(actname)
+		xpanel()
+
+		xpanel("1",1)
+		 xbutton("Average","averages(Yval)")
+		xbutton("Single","singlecorrelation(Yval,Xval1)")
+		xbutton("Double","doublecorrelation(Yval,Xval1,Xval2)")
+		xbutton("Triple","triplecorrelation(Yval,Xval1,Xval2,Xval3)")
+		xcheckbox("Powers",&powers)
+		xpanel(300,20)
+		for i=0,3 { stats_sub(i) }
+
+
+		vbox1.intercept(0)
+		vbox1.map("Statistics",500,0,380,260)		
+
+		}
+			
+
+
+proc Graph_menu() { 
+		xmenu("Graphs")
+			xmenu("New Graph")
+			xbutton("Voltage axis","newPlotV()")
+			xbutton("Current axis","newPlotI()")
+			xbutton("State axis","newPlotS()")
+			xbutton("Shape plot","newshapeplot()")
+			xbutton("Vector movie","newvectorplot()")
+			xbutton("Phase Plane","newphaseplane()")
+			xbutton("Grapher","load_proc(\"makegrapher\") makegrapher()")
+			xmenu()
+
+		xbutton("-------------------","n=1")
+
+		xmenu("Which Sections")
+			xradiobutton("trunk","sim_plt(1)")
+			xradiobutton("all","sim_plt(2)")
+			xradiobutton("branchpoints","sim_plt(3)")
+			xradiobutton("terminations","sim_plt(4)")
+			xradiobutton("branchpoints_noend","sim_plt(5)")
+			xradiobutton("all_noend","sim_plt(6)")
+		xmenu()
+		xmenu("Which Length")
+			xradiobutton("electrotonic","L_switch(1) sim_plt()")
+			xradiobutton("physical","L_switch(0) sim_plt()")
+			xmenu()
+
+		xbutton("-------------------","n=1")
+
+		xbutton("Simulation","sim_plot()")
+		xbutton("Geometric values","geom_plot()")
+		xbutton("Functional values","impedance_plot()")
+
+		xbutton("-------------------","n=1")
+
+		xmenu("Simulation X against distance")
+	xbutton("peak voltage change","APdvdr_plot()")   /* dvpeak/dr(distance soma) */
+	xbutton("AP amplitude","APamp_plot()")      /* AP amplitude(distance soma) */
+	xbutton("AP max velocity","APvmax_plot()")	/* AP maxvelocity(distance soma) */
+	xbutton("AP peak latency","APplat_plot()")     /* AP peak latency(distance soma) */
+	xbutton("AP onset latency","APolat_plot()")     /* AP onset latency(distance soma) */
+	xbutton("AP halfwidth","APhalf_plot()")     /* AP halfwidth(distance soma) */
+	xbutton("AP voltage vs time","APvolt_plot()")      
+	xbutton("AP peak","APpeak_plot()")
+	xbutton("general info","APtext_plot()")     /* general info on cell */
+		xmenu()
+
+		xmenu("Gemeotric individual")
+		xradiobutton("attenuation_plot()")   
+		xradiobutton("interbranchdist()")  
+		xradiobutton("areadist()")  
+		xradiobutton("dareadist()") 
+		xradiobutton("diamdist()")  
+		xradiobutton("ralldistribution()")/* plot rall ration distribution */
+		xradiobutton("diam_distance()")   /* plot distance upstream branchpoint v distance soma */
+		xradiobutton("branchhist()")      /* histogram of branchpoints and terminations */
+		xradiobutton("branchgauss()")     /* Gaussian distribution of branchpoints and terminations */
+		xradiobutton("crossarea()")       /* plot crossectional area as fxn of distance */
+		xradiobutton("ralldarea()")        /* plot "ralldarea" as a fxn of distance */
+		xmenu()
+		xmenu("Impedance individual")
+		xradiobutton("Rmismatch_plot()")        /* Resistance mismatch */
+		xradiobutton("Zmismatch_plot()")        /* Impedance mismatch */
+		xradiobutton("APsine()")          /* AP sine frequency */
+		xradiobutton("mismatch_bar()")           /* bar chart of R & Z mean values */
+		xradiobutton("Rmismatchgauss()")   /* plot distribution of R (distal/distal + proximal) */
+		xradiobutton("Zmismatchgauss()")
+		xmenu()
+		xmenu()
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+proc runcontrol() {
+		xpanel("RunControl", 0)
+		xcheckbox("Use CVode",&using_cvode_,"cvode.active(using_cvode_)")
+		v_init = -70
+		xvalue("Init","v_init", 1,"stdinit()", 1, 1 )
+		xbutton("Init & Run","run()")
+		xbutton("Stop","stoprun=1")
+		runStopAt = 5
+		xvalue("Continue til","runStopAt", 1,"{continuerun(runStopAt) stoprun=1}", 1, 1 )
+		runStopIn = 1
+		xvalue("Continue for","runStopIn", 1,"{continuerun(t + runStopIn) stoprun=1}", 1, 1 )
+		xbutton("Single Step","steprun()")
+		t = 0
+		xvalue("t","t", 2 )
+		tstop = 1000
+		xvalue("Tstop","tstop", 1,"tstop_changed()", 0, 1 )
+		dt = 0.025
+		xvalue("dt","dt", 1,"setdt()", 0, 1 )
+		steps_per_ms = 40
+		xvalue("Points plotted/ms","steps_per_ms", 1,"setdt()", 0, 1 )
+		xpanel(970,340)
+                 }
+
+proc mainpanel() {
+			xpanel("NEURON Main Panel", 0)
+			xcheckbox("Quiet",&stdrun_quiet,"")
+			realtime = 0
+			xvalue("Real Time","realtime", 0,"", 0, 1 )
+			celsius = 37
+			xvalue("celsius","celsius", 1,"", 0, 1 )
+			global_ra = 150
+			xvalue("Axial Resistivity","global_ra", 1,"set_ra()", 1, 1 )
+			xbutton("RunControl","nrncontrolmenu()")
+			xmenu("New Graph")
+			xbutton("Voltage axis","newPlotV()")
+			xbutton("Current axis","newPlotI()")
+			xbutton("State axis","newPlotS()")
+			xbutton("Shape plot","newshapeplot()")
+			xbutton("Vector movie","newvectorplot()")
+			xbutton("Phase Plane","newphaseplane()")
+			xbutton("Grapher","load_proc(\"makegrapher\") makegrapher()")
+			xmenu()
+			xmenu("Point Processes")
+			xmenu("Managers")
+			xbutton("Point Manager","load_template(\"PointProcessManager\") makeppm()")
+			xbutton("Point Group","load_template(\"PointProcessGroupManager\") makeppgm()")
+			xbutton("Electrode","load_proc(\"makeelectrode\") makeelectrode()")
+			xmenu()
+			xmenu("Viewers")
+			
+			xmenu("PointProcesses")
+			xbutton("IClamp","makePointBrowser(\"IClamp\")")
+			xbutton("AlphaSynapse","makePointBrowser(\"AlphaSynapse\")")
+			xbutton("Synapse","makePointBrowser(\"syn2\")")
+			xbutton("TrigKSyn","makePointBrowser(\"TrigKSyn\")")
+			xbutton("SEClamp","makePointBrowser(\"SEClamp\")")
+			xbutton("VClamp","makePointBrowser(\"VClamp\")")
+			xbutton("APCount","makePointBrowser(\"APCount\")")
+			xmenu()
+			xmenu()
+			xmenu()
+			xmenu("Distributed Mechanisms")
+			xmenu("Managers")
+			xbutton("Inserter","load_template(\"Inserter\") makeinserter()")
+			xbutton("Homogeneous Spec","load_proc(\"makeshowmechanism\") makeshowmechanism()")
+			xmenu()
+			xmenu("Viewers")
+			xbutton("Shape Name","load_template(\"MenuExplore\") makeMenuExplore()")
+			xbutton("Name Values","nrnallsectionmenu()")
+			xmenu("Mechanisms (Globals)")
+			xbutton("na_ion","nrnglobalmechmenu(\"na_ion\")")
+			xbutton("k_ion","nrnglobalmechmenu(\"k_ion\")")
+			xbutton("hh","nrnglobalmechmenu(\"hh\")")
+			xbutton("ca_ion","nrnglobalmechmenu(\"ca_ion\")")
+			xbutton("ca","nrnglobalmechmenu(\"ca\")")
+			xbutton("cad","nrnglobalmechmenu(\"cad\")")
+			xbutton("kca","nrnglobalmechmenu(\"kca\")")
+			xbutton("km","nrnglobalmechmenu(\"km\")")
+			xbutton("kv","nrnglobalmechmenu(\"kv\")")
+			xbutton("na","nrnglobalmechmenu(\"na\")")
+			xmenu()
+			xmenu()
+			xmenu()
+
+			xmenu("Miscellaneous")
+			xmenu("Clipboard")
+			xbutton("Save to File","load_proc(\"clipboard_save\") clipboard_save()")
+			xbutton("Retrieve from File","load_proc(\"clipboard_retrieve\") clipboard_retrieve()")
+			xbutton("Gather Values","load_template(\"GatherVec\") makeGatherVec()")
+			xbutton("Vector Play","load_template(\"VectorPlay\") makeVectorPlay()")
+			xbutton("Vector Wrapper","load_template(\"VecWrap\") makeVecWrap()")
+			xmenu()
+			xmenu("Family")
+			xbutton("Family","load_template(\"Family\") makeFamily()")
+			xbutton("Command","load_template(\"ExecCommand\") newcommand()")
+			xmenu()
+			xbutton("Parameterized Function","load_template(\"FunctionFitter\") makefitter()")
+			xbutton("Run Fitter","load_template(\"RunFitter\") makerunfitter()")
+			xmenu("Impedance")
+			xbutton("Frequency","load_template(\"ImpedanceRatio\") makeImpRatio()")
+			xbutton("Path","load_template(\"Impx\") makeImpx()")
+			xbutton("log(A) vs x","load_template(\"LogAvsX\") makelogax()")
+			xbutton("Shape","load_template(\"ImpShape\") makeImpShape()")
+			xmenu()
+			xmenu()
+			xpanel(910,70)
+		}
+
+
+
+proc PointLocator() { 
+		if ($1==0) ppl = new PointProcessLocator(vclamp)
+		if ($1==1) ppl = new PointProcessLocator(st)
+		if ($1==2) ppl = new PointProcessLocator(synapse)
+
+		}
+
+
+proc select_ref() { ref2.loc(hoc_ac_)
+			ref.point_mark_remove()
+			ref.point_mark(ref2,3)
+		     }
+
+
+proc gactive_run() { 	local n
+			/* simupanel run for GUI */
+			n = numarg()
+			rinput_calc()
+			if (n>0) { simMode = $1	 }
+		     	if (n>0) sim(VClampScale) else sim()
+			sim_calc()
+			sim_plot()
+		   }	
+
+equiv=0
+
+
+proc neuron_set() {     local dummy,dummy2,ct,i
+
+		dummy=equiv
+		equiv=0
+		forward = 0
+		printcellnameact = 0
+
+		dcell = cell	
+		dcore = core	
+		dsuffix = suffix	
+		dcellname = cellname
+		dcelladdress = celladdress
+
+
+	xmenu("Neuron")
+	for i=0,7 {
+	if (i==0) xmenu("Pyramidal")
+	if (i==1) xmenu("Nigral")
+	if (i==2) xmenu("Purkinje")
+	if (i==3) xmenu("DG granule cells")
+	if (i==4) xmenu("DG interneurons")
+	if (i==5) xmenu("CA1 Pyramidal")
+	if (i==6) xmenu("CA3 Pyramidal")
+	if (i==7) xmenu("CA3 interneurons")
+
+
+	for ct=0,CellList.count-1 {  if (CellList.object(ct).type==i) {
+	  cell_name(CellList.object(ct).loc)
+	  sprint(str1,"xradiobutton(cellname,\"cell_name(CellList.object(%d).loc,1)\")",ct)
+	  execute(str1)
+				}}
+	xmenu()   }
+	xmenu()
+
+	equiv=dummy 
+	printcellnameact = 1
+		cell = dcell	
+		core = dcore	
+		suffix = dsuffix	
+		cellname = dcellname
+		celladdress = dcelladdress
+} 
+
+
+
+
+
+
+
+
+proc stats_sub() { local ct
+
+		n = $1
+
+		if (n==0) str1 = "y"
+		if (n==1) str1 = "x1"
+		if (n==2) str1 = "x2"
+		if (n==3) str1 = "x3"
+		
+		xpanel(str1)
+		xmenu(str1)
+		if (n==1) xbutton("functional","geometric=0 Xval1=-2 Xval1str = \"functional\"")
+		if (n==1) xbutton("geometric","geometric=1 Xval1=-1  Xval1str = \"geometric\"")
+
+		ct = 0
+		for i=0,parameters.count()-1 {
+			if ((mod(i,25)==0)) { 
+						if (ct>0) xmenu() 
+						sprint(str1,"%d",ct+1)
+						xmenu(str1)
+						ct += 1 }
+
+			str2 = parameters.object(i).str
+			N    = parameters.object(i).n       
+			sprint(str2,"xbutton(\"%s\",\"pick(%d,%d)\")",str2,n,N)
+			execute(str2) // makes button entry
+					   }
+		xmenu() 
+		
+		if (n==0) xvarlabel(Yvalstr)
+		if (n==1) xvarlabel(Xval1str)
+		if (n==2) xvarlabel(Xval2str)
+		if (n==3) xvarlabel(Xval3str)
+		xmenu()
+
+		xpanel(300,0)
+	}
+ 
+
+proc pick() {
+		dissect($2)
+
+		if ($1==0) { Yvalstr = Data[ci][cj][ck].str 
+			     Yval = $2 }
+		if ($1==1) { Xval1str = Data[ci][cj][ck].str 
+			     Xval1 = $2 }
+		if ($1==2) { Xval2str = Data[ci][cj][ck].str 
+			     Xval2 = $2 }
+		if ($1==3) { Xval3str = Data[ci][cj][ck].str 
+			     Xval3 = $2 }
+
+		}		
+
+
+
+proc singlecorrelation() { local i
+
+		if ($2==-2) { if (powers) single_corrf(Yval,1) else single_corrf(Yval) }
+		if ($2==-1) { if (powers) single_corr(Yval,1)  else single_corr(Yval) }
+
+		if (($2<0)&&(powers==0)) { for i=0,5 cplot(Yval,goodcorr[1].x[i]) }
+		if (($2<0)&&(powers==1)) { for i=0,5 powerplot(Yval,goodcorr[1].x[i]) }
+
+		if ($2>-1) {if (powers) powerplot($1,$2) else cplot($1,$2)}		
+		}
+
+proc doublecorrelation() {
+
+	if ($2==-1) {if (powers) double_corr(Yval) else double_corr(Yval,1)}
+	if ($2==-2) continue_dialog("This is not implemented at present")
+	if ($2>-1) { if (powers) powerplot(Yval,Xval1,Xval2) else { c3(Yval,Xval1,Xval2) cplot()} }
+
+			 }
+
+proc triplecorrelation() { 
+			if (($2>-1)&&(powers==1)) powerplot(Yval,Xval1,Xval2,Xval3) else {
+				continue_dialog("This is not implemented at present") }
+			}
+
+proc sim_plot() {	/* plot simulation results of trunk segments */
+			
+			clf()	
+			APvolt_plot()
+			APamp_plot()
+		//	APvmax_plot()
+		//	APplat_plot()
+		//	APolat_plot()
+		//	APhalf_plot()
+
+			if (cells >3) APvolt_plot(3)
+			// APpeak_plot()			
+			APtext_plot()
+			APdvdr_plot()
+		}
+
+
+proc geom_plot() { 	/* plot geometric measures */
+
+			if (!numarg())	{ geometry_calc(1) }
+
+			// interbranchdist()
+			/* branchgauss() */
+			branchhist()
+			areadist()
+			dareadist()
+			if (electrotonicL) crossarea()
+			/* rallarea() */
+			ralldistribution()
+			/* diam_distance() */
+			diamdist()
+         	       }					
+
+
+proc geom_pt()      { 	local i, max /* print some geometric values */
+
+			i = max = 0 
+
+			forsec branchpoints {
+				if (max < ralldiam.x[i]) { max = ralldiam.x[i]
+							       this_section() sref = new SectionRef()
+								}
+				print ralldiam.x[i] , " ", secname()
+				i+=1
+					    }
+			sref.sec print "section ", secname(), " has the highest rall ratio (",max,")"
+			sref.sec get_children()
+			totaldiam = 0
+			forsec children { print 1 
+					  print (diam(0)^(1.5))
+					  totaldiam += (diam(0)^(1.5))
+					}
+			sref.sec print totaldiam/(diam(1)^(1.5))
+		      }
+
+
+
+proc impedance_plot() { /* plot impedance values (all points) */
+			clf()
+		//	mismatch_bar()
+			Rmismatch_plot()
+			Zmismatch_plot()
+		//	APsine()
+		//	Rmismatchgauss()
+		//	Zmismatchgauss()
+		}
+
+
+proc sim_plt2()	{ electrotonicL = $1
+		  dist_switch()
+		sim_plt()
+		}
+
+proc sim_plt() { /* plot simulation values */
+		if (numarg() == 1) dist_switch($1) else dist_switch()
+		sim_calc()
+		sim_plot()
+		}
+
+
+
+
+/*****************************************************************
+  Single Plots
+ *****************************************************************/
+
+
+proc APamp_plot() 	{ local i  /* AP amplitude(distance soma) */
+
+		  fig(dist,amp,1,0,2,3)
+
+			ref  	= dist.c
+			ref.div(-amp_lmd).apply("exp").mul(amp_max).add(amp_bas)
+			sort(dist,ref)
+			if (!electrotonicL)	fig(v1,v2,0,1,1)
+
+			figlab("AP amplitude",0.3,0.9)
+
+			}
+
+proc APvmax_plot() 	{ local i /* AP maxvelocity(distance soma) */
+
+		  fig(dist,vmax,1,0,2,3)
+
+			ref = dist.c
+			ref.div(-vmax_lmd).apply("exp").mul(vmax_amp)
+			sort(dist,ref)
+			if (!electrotonicL) fig(v1,v2,0,1,1)
+			figlab("AP max velocity",0.3,0.9)
+
+			}
+
+
+proc APplat_plot() 	{ local i  /* AP peak latency(distance soma) */
+
+
+		  fig(dist,plat,1,0,2,3)
+
+
+			ref 	= dist.c
+			ref.div(plat_s)
+			sort(dist,ref)
+			if (!electrotonicL) fig(v1,v2,0,1,1)
+
+			figlab("AP peak latency",0.3,0.9)
+
+			}
+
+
+proc APolat_plot() 	{ local i  /* AP onset latency(distance soma) */
+
+
+		  fig(dist,olat,1,0,2,3)
+
+			ref  	= dist.c
+			ref.div(olat_s)
+			sort(dist,ref)
+			if (!electrotonicL) fig(v1,v2,0,1,1)
+
+			figlab("AP onset latency",0.3,0.9)
+
+			}
+
+
+
+proc APhalf_plot() 	{ local i,a  /* AP halfwidth(distance soma) */
+
+			  fig(dist,half,1,0,2,3)
+
+			ref = dist.c
+			ref.mul(half_s).add(half_b)
+			sort(dist,ref)
+			if (!electrotonicL) fig(v1,v2,0,1,1)
+
+			figlab("AP halfwidth",0.3,0.9)
+
+			}
+
+
+
+proc APvolt_plot()	{ local n
+
+			fig(time,vsoma)
+			fig(time,vnode,0,1,3)
+			fig(time,vdend,0,1,2)
+			if (simMode==1 || simMode==3) fig(time,voltrec,0,1,4)
+			if (simMode==5 ) fig(time,synapserec,0,1,5)
+
+			if (n==0)	figlab(activecell,0.7,0.9)\
+
+					figlab("soma")
+					figlab("node",3)
+					figlab("dendrite",2)
+			if (simMode==1 || simMode==3) figlab("vclamp site",4)
+			if (simMode==5) figlab("synaptic site",5)
+
+			}
+
+
+proc APpeak_plot()	{
+			sort(dist,vpk)
+			fig(v1,v2)
+			figlab("Vpeak",0.7,0.9)
+			}
+
+
+
+proc APdvdr_plot() 	{ local i /* AP maxvelocity(distance soma) */
+
+		    fig(dist,dvdr,1,0,2,3)
+
+			figlab("dvpeak/dr",0.3,0.9)
+
+			}
+
+
+
+proc APtext_plot()	{ /* general info on cell */
+
+			fig(dist,dist,0,0,0)
+
+			fsize = 1.2
+		        figlab(activecell,0.02,0.9)
+			fsize = 0.9
+
+			figlab("active",0.02,0.7)
+			sprint(str1,"gna\t\t%g",g_na)
+			figlab(str1)
+			sprint(str1,"gkv\t\t%g",g_kv)
+			figlab(str1)
+			sprint(str1,"gna (node)\t%g",g_nanode)
+			figlab(str1)
+			sprint(str1,"gkv (node)\t%g",g_kvnode)
+			figlab(str1)
+
+			sprint(str1,"%1.2f nA",st.amp)
+			figlab(str1)
+
+			figlab("passive",0.4,0.7)
+			sprint(str1,"Rm %g",rm)
+			figlab(str1)
+			sprint(str1,"Ra %g",rax)
+			figlab(str1)
+			sprint(str1,"cm %1.2f",c_m)
+			figlab(str1)
+			sprint(str1,"err %3.1f",err)
+			figlab(str1,0.7,0.7)
+			sprint(str1,"tau %3.1f",(c_m*rm/1000))
+			figlab(str1)
+			if (cells>3)	sprint(str1,"rin %3.1f+-%1.1f",rin.mean, rin.stdev)
+			if (cells<=3)	sprint(str1,"rin %3.1f",rin.x[0])
+			figlab(str1)
+			figlab(date)
+			sprint(str1,"equiv_diam %2.2f",equiv_diam)
+			figlab(str1)
+			figure[figcurrent].yaxis(3)
+//			figure[figcurrent].unmap
+//			figure[figcurrent].view(0,0,1,1,650,300,250,125)
+			}
+
+
+
+proc attenuation_plot() {  
+
+
+				Soma.sec { impR = new Impedance()
+					    impR.loc(0.5)
+					    impR.compute($1)
+					  }
+			rest()        			
+			ref.resize(0)
+			forsec distlist for k = 0,nseg-1 {ref.append(impR.transfer(0.5))}
+			ref.scale(ref.min/ref.max,1)
+			
+			fig(dist,ref,1,add.x[i],colour.x[i])
+			ref = dist.c
+			ref.sort()
+	 		if (i==0) fig(ref,ref.mul(Slope).add(Offset),0,1)
+
+
+			figlab("passive attenuation",0.3,0.9)
+			figlab(activecell)
+			sprint(str1,"Input frequency %g Hz",$1)
+			figlab(str1)
+			}
+	
+proc interbranchdist() { 
+				marksize = 4
+				fig(somadist,updst,1,0)
+				figlab("Distance to upstream branchpoint",0.2,0.9)
+			}
+
+proc areadist() 	{	
+				fig(gdist,Ar,0,0)
+				figlab("Area",0.3,0.9)
+				figure[figcurrent].color(2)
+				figlab(activecell)
+			}				
+
+
+proc dareadist()	{
+
+				fig(gdist,dAr,0,0)
+				figlab("dArea/dr",0.3,0.9)
+			}
+
+proc diamdist()		{
+
+				fig(gdist,mdiam,0,0)
+				fig(gdist,sections,0,1,2)
+				fig(somadist,branchpointdiam,1,1,1,4,"o")
+				figlab("# sections",0.2,0.9,2)
+				figlab("average diam",0.42,0.9,1)
+				figlab("parent diam",0.7,0.9)
+			}
+			
+
+proc ralldistribution() {	/* plot rall ration distribution */
+
+			gauss(ralldiam,0.01,0.01)
+			fig(gaussx,gaussy)
+
+			onex = new Vector(2,1)
+			oney = new Vector(2,0)
+			oney.x[1] = gaussy.max
+			fig(onex,oney,0,1,2)
+			figlab("d3/2 ratio distribution",0.3,0.9)
+			}
+
+
+proc diam_distance()	{ /* plot distance upstream branchpoint v distance soma */
+
+			fig(somadist,ralldiam,1,0,1,4)
+
+			onex = new Vector(2,0)
+			onex.x[1] = gdist.max
+			oney      =  new Vector(2,1)
+
+			fig(onex,oney,0,1,2)
+			figlab("d3/2 ratio",0.3,0.9)
+
+			}
+
+
+proc branchhist()    {  /* histogram of branchpoints and terminations */
+
+			hist(somadist,14,terminationdist.max,0)
+			fig(histx,histy,0,0,2,2)
+			hist(terminationdist,14,terminationdist.max,0)
+			fig(histx,histy,0,1,1)
+			figlab("Terminations",0.5,0.9)
+			figlab("Branchpoints",0.2,0.9,2)
+
+		     }
+
+
+proc branchgauss()     { /* Gaussian distribution of branchpoints and terminations */
+
+			gauss(somadist,gstep(),somadist.max/2)
+			fig(gaussx,gaussy,0,0,2)
+			gauss(terminationdist,gstep(),terminationdist.max/2)
+			fig(gaussx,gaussy,0,1,1)
+			figlab("Branchpoints",0.2,0.9,2)
+			figlab("Terminations",0.5,0.9)
+		      }
+
+
+proc crossarea() {	/* plot equivalent crosssectional" diameter as fxn of distance */
+
+			fig(gdist,mdiam)
+			figlab("membranearea diam",0.3,0.9)
+
+			fig(gdist,rdiam,0,1,2)
+			figlab("ralldiam",2)
+
+			fig(gdist,cdiam,0,1,3)
+			figlab("relcrossareadiam",3)
+
+		}
+
+
+proc ralldarea() {	/* plot "ralldarea" as a fxn of distance */
+
+			fig(gdist,rdiam.c.mul(PI))
+			figlab("ralldarea/dr",0.3,0.9)
+		}			
+						
+			
+proc Rmismatch_plot()	{ local i,x
+			/* Resistance mismatch */
+
+			Rmismatch.resize(0)
+			aRmismatch.resize(0)
+
+			forsec distlist {for i = 0,nseg-1  { 	x = (i+.5)/nseg
+								Rmismatch.append(Rmismatch_pk(x))
+						 		aRmismatch.append(aRmismatch_pk(x)) }}
+
+			fig(dist,Rmismatch, 1,0,1,3)
+			fig(dist,aRmismatch,1,1,2,3)
+
+			onex = new Vector(2,0)
+			onex.x[1] = dist.max
+			oney = new Vector(2,1)
+			fig(onex,oney,0,1,2)
+
+			figlab("Resistance mismatch",0.3,0.9)
+		}
+
+
+proc Zmismatch_plot()	{ local i, x /* Impedance mismatch */
+
+			Zmismatch.resize(0)
+			aZmismatch.resize(0)
+
+			forsec distlist { for i = 0,nseg-1  { 	x = (i+.5)/nseg
+								Zmismatch.append(Zmismatch_pk(x))
+						 		aZmismatch.append(aZmismatch_pk(x)) }}
+			fig(dist,Zmismatch, 1,0,1,3)
+			fig(dist,aZmismatch,1,1,2,3)
+
+			onex = new Vector(2,0)
+			onex.x[1] = dist.max
+			oney = new Vector(2,1)
+			fig(onex,oney,0,1,2)
+
+			figlab("Impedance mismatch",0.3,0.9)
+		}
+
+proc APsine()	{ 	/* AP sine frequency */
+
+			Zfrequency.resize(0)
+			ref.resize(0)
+			forsec distlist { Zfrequency.append(f_pk)
+ 					  ref.append(fdistance(0.5)) }
+			fig(ref,Zfrequency,1)
+			figlab("AP sine frequency")
+		}
+
+
+			
+			
+
+proc mismatch_bar()	{	/* bar chart of R & Z mean values */
+
+			ref.resize(0)
+			ref.append(Rmismatch_mean)
+			ref.append(aRmismatch_mean)
+			ref.append(Zmismatch_mean)
+			ref.append(aZmismatch_mean)
+			bar(ref,2,0.2)
+			fig(barx,bary)
+
+			figlab("Rp",0.27,0.2)
+			figlab("Ra",0.45,0.2,2)
+			figlab("Zp",0.62,0.2)
+			figlab("Za",0.82,0.2,2)
+			figlab(activecell,0.45,0.06)
+			figure[figcurrent].xaxis(1)
+		}
+
+
+
+proc Rmismatchgauss() {	/* plot distribution of R (distal/distal + proximal) */
+
+			gauss(Rmismatch,0.01,0.02)
+			fig(gaussx,gaussy)
+			gauss(aRmismatch,0.01,0.02)
+			fig(gaussx,gaussy,0,1,2)
+
+			gauss(Zmismatch,0.01,0.02)	/* to scale with Z */
+			fig(gaussx,gaussy,0,1,0)
+
+			figlab("Resistance (distal/distal+proximal)",0.25,0.9)
+			figlab("passive")
+			figlab("active",2)
+
+			}
+
+
+proc Zmismatchgauss() {	/* plot distribution of R (distal/distal + proximal) */
+
+			gauss(Zmismatch,0.01,0.02)
+			fig(gaussx,gaussy)
+			gauss(aZmismatch,0.01,0.02)
+			fig(gaussx,gaussy,0,1,2)
+
+			gauss(Rmismatch,0.01,0.02)	/* to scale with R */
+			fig(gaussx,gaussy,0,1,0)
+
+			figlab("Impedance (distal/distal+proximal)",0.25,0.9)
+			figlab("passive")
+			figlab("active",2)
+
+			}
+			
+			
+			
+			
+
+proc branchinfo() { 	/* plot distance to upstream branchpoint against distance from soma */
+
+			histx.resize(0)		/* distance to upstream branchpoint */
+			histy.resize(0)		/* distance of branchpoint from soma */
+			
+			forsec branchpoints { 	histy.append(upstreamdst())
+						histx.append(fdistance(0))
+					   }				    
+			fig(histx,histy,1)
+         	       }				
+
+
+proc rall()         {	/* print rall ratio for given section */
+ 
+			p = diam(1)^1.5
+			get_children()						
+			d = 0
+	       	        forsec children  d += diam(0)^1.5
+			print p,d, d/p, secname()
+
+		    }
+
+
+
+proc Getdata() {
+
+dlog = new VBox()
+dlog.intercept(1)
+	xpanel("signal propagation toolbox")
+			xvarlabel(actname)
+			activemodel_set()
+			xcheckbox("equivalent",&equiv)
+			xradiobutton("backpropagation","{forward=0 hdecay=0}")
+			xradiobutton("forward200","{forward=1 hdecay=0}")
+			xradiobutton("forwardhdecay","{forward=0 hdecay=1}")
+	xpanel()
+dlog.intercept(0)
+
+printcellnameact = 0
+cell_name(n2.loc,1)
+printcellnameact = 1
+actname_set(0)
+
+if (dlog.dialog("Select dataset to analyse","Load","Cancel")==1) {
+		get_data(ActiveModel)
+		}
+		}
+
+
+
+
+proc Load_cell() {
+
+dlog = new VBox()
+dlog.intercept(1)
+	xpanel("signal propagation toolbox",1)
+			xvarlabel(cellnameact)
+	xpanel()
+	xpanel("",1)
+			neuron_set()
+			activemodel_set()
+	xpanel()
+dlog.intercept(0)
+
+printcellnameact = 0
+cell_name(n2.loc,1)
+printcellnameact = 1
+actname_set(0)
+
+if (dlog.dialog("Please pick a neuron and an active model")==1) {
+
+
+		get(cell,ActiveModel)
+		Electrophysiology()
+//		show()
+	}
+
+
+
+		}
+
+
+
+
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
+
+
+
+if (boolean_dialog("Welcome to ProgagationGeometry","Load Cell","Statistics")==1) {
+ Main() Load_cell() } else { Getdata() Statistics() Main()}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

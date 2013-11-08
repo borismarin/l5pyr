@@ -1,0 +1,10 @@
+nathresholdvclamp act0
+cell type     	 mean	         stdev	          stderr
+Pyramidal    	 33.8730	  9.3226	  3.8059
+Nigra        	 84.5386	 29.9953	 14.9976
+Purkinje     	145.8041	 87.6716	 39.2079
+DG granule   	 80.1514	 35.6033	 14.5350
+DG inter     	135.2257	115.0884	 46.9847
+CA1 Pyramidal	110.8635	 22.7853	 11.3927
+CA3 Pyramidal	 74.1513	 48.7676	 21.8095
+CA3 inter    	110.3934	 58.8782	 26.3311

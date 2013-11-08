@@ -1,0 +1,1175 @@
+/* Relating dendritic geometry and signal propagation   */
+/* statistics.hoc Version 1.0                           */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+/*  Nomenclature for correlations */
+/*  data vector has three subscripts in the order data[i][j][k] */
+/*  correlations are made between two vectors vecx and vecy */
+/*  generally vecx is the functional measure (e.g. 3014 == data[0][0][0] == nathreshold) */
+/*  vecy is the geometric measure. */
+/*  the correlations optimize the power of the geometric measure g,
+  so as to maximize R.
+  multiple g's can be used, such that
+  	  vecy = veca^a * vecb^b * vecc^c
+  accordingly, for veca the data vector is data[ia,ja,ka]
+  R for vecx,vecy is calculated with Rcorrelation
+
+  to make input easier vectors can be accessed with a single number **/
+
+nan0x7fffffff = 0
+nan0x10000000 = 0
+
+
+
+
+
+/*************************************************************
+  Information matrix
+ *************************************************************/
+proc get_neurondata() { local hdum, fdum 
+		/* append characteristics of cell $s1 and active model $s2 to file cell.dat */
+
+		     printcellnameact = 0
+		     cell_name($s1,1)
+		     print ct+=1, "\t", cellname
+		     ActiveModel = $s2
+
+
+	     	cellc.append(CellList.object(ct).type)
+
+
+		     /* functional values   */
+		     /***********************/	
+		     readveca("nathreshold")
+if (!forward)	{
+		     add_vals(0,0,"nathreshold")
+if (!mix)      {     add_vals(0,1,"st_intensity")	
+		     add_vals(0,21,"nathresholdvclamp2") 	
+	  	     add_vals(0,16,"AP200_half")
+	  	     add_vals(0,17,"AP200_steep")
+	  	     add_vals(0,18,"AP200_range")
+	 	     add_vals(0,19,"AP200_basis")
+		}}
+		     add_vals(0,14,"nathresholdvclamp") 	
+		     add_vals(0,10,"AP200") 	
+if (!mix)	 {   add_vals(0,11,"AP200_pass") 	
+		     add_vals(0,12,"APhalf") 	
+		     add_vals(0,13,"APhalf_pass") }	
+
+
+
+
+if (mix)	{    equiv=1  /* from the equivalent cylinder */
+		     cell_name(cell)
+		     readveca("nathreshold")			
+		     equiv=0
+		     mforward = forward
+		     mhdecay  = hdecay
+		     set_suffix("reset")
+		     forward = mforward
+		     hdecay  = mhdecay 
+		     cell_name(cell)
+		}
+
+		     add_vals(0,2,"Rmismatch_peak")	
+		     add_vals(0,3,"Zmismatch_peak")	
+		     add_vals(0,4,"aRmismatch_peak")	
+		     add_vals(0,5,"aZmismatch_peak")	
+		     add_vals(0,6,"Rmismatch_mean") 	
+		     add_vals(0,7,"Zmismatch_mean") 	
+		     add_vals(0,8,"aRmismatch_mean") 	
+		     add_vals(0,9,"aZmismatch_mean") 	
+	     	     add_vals(0,15,"input_resistance") 	
+
+
+		     /* forward impedances */
+		     /***********************/	
+
+
+		     add_vals(0,22,"Zfwd_min") 	
+		     add_vals(0,23,"Zfwd_max") 	
+		     add_vals(0,24,"dZfwd_max") 	
+		     add_vals(0,25,"dZfwd_min") 	
+		     add_vals(0,26,"Rfwd_min") 	
+		     add_vals(0,27,"Rfwd_max") 	
+		     add_vals(0,28,"dRfwd_max") 	
+		     add_vals(0,29,"dRfwd_min") 	
+		     add_vals(0,30,"aZfwd_min") 	
+		     add_vals(0,31,"aZfwd_max") 	
+		     add_vals(0,32,"daZfwd_max") 	
+		     add_vals(0,33,"daZfwd_min") 	
+		     add_vals(0,34,"aRfwd_min") 	
+		     add_vals(0,35,"aRfwd_max") 	
+		     add_vals(0,36,"daRfwd_max") 	
+if (!hdecay)	     add_vals(0,37,"daRfwd_min") else add_vals(0,37,"halfdecay_max")
+ 	
+
+equiv=1
+cell_name(cell)
+readveca("Zfwd_normalize")
+fdum=forward
+hdum=hdecay
+set_suffix("reset")
+forward=fdum
+hdecay=hdum
+cell_name(cell)
+		      add_vals(0,38,"cZfwd_min")
+		      add_vals(0,39,"cZfwd_max")
+		      add_vals(0,40,"cRfwd_min")
+		      add_vals(0,41,"cRfwd_max")
+		      add_vals(0,42,"caZfwd_min")
+		      add_vals(0,43,"caZfwd_max")
+		      add_vals(0,44,"caRfwd_min")
+		      add_vals(0,45,"caRfwd_max")
+
+
+
+
+if (!mix)	{     
+		     /* geometric values    */
+		     /***********************/	
+		     readvec("numbers")
+		     add_vals(1,0,"darea_max")	    
+		     add_vals(1,1,"darea_maxdist")	
+		     add_vals(1,2,"area_max")	    	
+		     add_vals(1,3,"branchpoints_num")  	
+		     add_vals(1,4,"rallratio_mean")    	
+		     add_vals(1,5,"rallratio_peak")    	
+		     add_vals(1,6,"distance_max")       
+		     add_vals(1,7,"sections_max")      	
+		     add_vals(1,8,"sections_maxdist")   
+		     add_vals(1,9,"sections_mean")
+		     add_vals(1,10,"taper_mean")   
+if (!hdecay&&!equiv){
+	             readvec("dAdr")				
+		     add_vals(1,11,"dAdr_ratio")		
+		     add_vals(1,12,"dAdr_relmax")	} 	
+	     	     readvec("darea")	     					
+		     add_vals(1,13,"d2area_max")
+		     add_vals(1,14,"d2area_maxdist")
+		     add_vals(1,15,"d2area_maxAr_ratio")
+		     add_vals(1,16,"d2area_maxAr_percent")
+                     /****************/
+		     add_vals(1,17,"diam_mean")
+		     add_vals(1,18,"branchdensity")
+		     add_vals(1,19,"branchdensityII")
+		     add_vals(1,20,"diamratio_peak")
+		     add_vals(1,21,"diamratio_mean")
+		     add_vals(1,22,"branchdensity_noend")
+		     add_vals(1,23,"branchdensityII_noend")
+		     add_vals(1,24,"diamratio_noend_peak")
+		     add_vals(1,25,"diamratio_noend_mean")
+		     add_vals(1,26,"mean_stem_dendrite_diam")
+		     add_vals(1,27,"rallratio_noend_peak")
+		     add_vals(1,28,"rallratio_noend_mean")
+
+		     /* electrotonic values */
+		     /***********************/	
+		     add_vals(2,0,"adarea_max") 	
+		     add_vals(2,1,"adarea_maxdist") 	
+		     add_vals(2,2,"adistance_max") 	
+		     add_vals(2,3,"asections_max") 	
+	//     	     add_vals(2,4,"asections_maxdist") 
+if (!hdecay&&!equiv){ 
+		     add_vals(2,5,"asections_mean") 	
+		     add_vals(2,6,"ataper_mean")	
+		     add_vals(2,11,"adiam_mean") 
+		}
+		     add_vals(2,7,"abranchdensity")	
+		     add_vals(2,8,"abranchdensityII")
+		     add_vals(2,9,"abranchdensity_noend")	
+		     add_vals(2,10,"abranchdensityII_noend")
+
+if (!forward&&!equiv) {	
+		     add_vals(2,12,"adeq_max")
+		     add_vals(2,13,"adeq_maxdist")
+if (!hdecay){
+		     readveca("deq")
+		     add_vals(2,14,"deq_relmax")
+		     add_vals(2,15,"deq_ratio")
+		     readveca("ddeq")
+		     add_vals(2,16,"ddeq_max")
+		     add_vals(2,17,"ddeq_maxdist")
+		     add_vals(2,18,"ddeq_maxAr_ratio") 
+	}
+		}
+		}
+		printcellnameact=1
+		}
+
+/**********************************************************************/
+
+proc add_vals() { local a, b, c 
+
+		a = $1
+		b = $2
+		c = 0
+		str1 = $s3
+
+		sprint(str1,"data[%d][%d][%d].append(%s)",a,b,c,str1)
+		execute(str1)
+		Data[a][b][c].str = $s3
+		Data[a][b][c].n   = antidissect(a,b,c)
+	}
+
+
+
+
+
+func lg()	{ if ($1 == 0) return 0 else return log($1) }
+
+proc get_data() {  local max,a  /* makes the vectors for correlation analysis */
+			      /* $s1 specifies the active model (default act0)	*/
+
+		
+	for k = 0,2 { for i = 0,2 { for j = 0,J { data[i][j][k] = new Vector() 
+						Data[i][j][k] = new MyString()	}}}
+	single_vectors(1)
+	cellc = new Vector()
+	ct = -1
+	n = numarg()
+
+	if (n==0) batch(7,act0) 
+	if (n==1) batch(7,$s1) 
+	if (n==2) calculation(n2.loc,7,act0)
+
+	for i = 0,2 { for j = 0,J { 
+
+	if (data[i][j][0].size==0) {  for k=1,2 Data[i][j][k] = new Vector()  
+				   }  else {
+
+      for k = 1,2 { data[i][j][k] = data[i][j][0].c 
+
+	{if (data[i][j][1].min()==0) {a=0.001} else a=data[i][j][1].min
+	str1 = Data[i][j][0].str
+	sprint(str1,"log(%s)",str1)
+	Data[i][j][1].str = str1
+	Data[i][j][1].n = antidissect(i,j,1)
+        data[i][j][1].div(a).apply("abs").apply("lg") }}
+
+	max = mx(abs(data[i][j][2].max),abs(data[i][j][2].min))
+	str1 = Data[i][j][0].str
+	sprint(str1,"exp(%s)",str1)
+	Data[i][j][2].str = str1
+	Data[i][j][2].n = antidissect(i,j,2)
+	data[i][j][2].div(max).apply("exp") }}}
+					 
+
+	get_geomorder()
+		}
+
+
+
+
+
+proc compare_activemodels() { local i,j,n,comp
+	
+	n=numarg()
+
+	for i=0,19 { corr[i] = new Vector() }
+	
+	corr[19] = $o1.c
+	if (n>1) comp = $2 else comp = 3014
+
+	
+	for i=0,6 {	sprint(str1,"act%d",i)
+			print "loading ", str1
+			get_data(str1)
+			
+			for j=0,corr[19].size()-1 { c3(comp,corr[19].x[j]) 
+					       corr[j].append(Rc)	}
+		}
+
+
+	fprint("Comparison between active Models\n")
+	clabel(comp)
+	fprint("%d %s\n",comp,str1)	
+
+	for i = 0,6 {  fprint("act%d\t",i) }
+	fprint("mean\tstd\n")
+
+	for j=0,corr[19].size()-1 { 
+	    	for i=0,6 {	fprint("%5.3f\t",corr[j].x[i])	}
+		clabel(corr[19].x[j])	
+		fprint("%5.3f\t%5.3f\t%s (%d)\n",corr[j].mean,corr[j].stdev,str1,corr[19].x[j])	
+
+				}
+		}
+
+
+
+
+
+
+
+
+
+/*************************************************************
+  Correlation core functions c / c2
+ *************************************************************/
+
+
+proc c2()	{ local n  		/* fitted correlation of $1-$3 with nathreshold */
+		  n = numarg()
+		  if (n==1) c(3014,$1)
+		  if (n==2) c(3014,$1,$2)
+		  if (n==3) c(3014,$1,$2,$3)
+		}
+
+proc c3()       { local n, fi,fj,fk,g1i,g1j,g1k,g2i,g2j,g2k
+		/* non-fitted correlation */
+		/* $1 is the functional measure */
+		/* $2 is the correlated measure */
+		 n = numarg()
+		if (n>=2)   dissect($1) else dissect(3014)
+		fi = ci
+		fj = cj
+		fk = ck
+
+		if (n>=2)   dissect($2) else dissect($1)
+		g1i = ci
+		g1j = cj
+		g1k = ck
+
+		if (n<=2)   correl_raw(fi,fj,fk,g1i,g1j,g1k,"no power") else {
+			    dissect($3)
+				correl_raw(fi,fj,fk,g1i,g1j,g1k,ci,cj,ck,"no power") }
+			    print Rc,"\t",param[0]
+		}
+
+proc c()	{ local n, fi,fj,fk,g1i,g1j,g1k,g2i,g2j,g2k
+		/* fitted correlation */
+		/* $1 is the functional measure */
+		/* $2-4 are the combined measures */
+		  n = numarg()
+
+		dissect($1)
+		fi = ci
+		fj = cj
+		fk = ck
+
+		if (n==2) { dissect($2)
+			    correl_raw(fi,fj,fk,ci,cj,ck) 
+			    print Rc,"\t",param[0] }
+
+
+		if (n==3) { dissect($2)
+			    g1i = ci
+			    g1j = cj
+			    g1k = ck
+			    dissect($3)
+			    correl_raw(fi,fj,fk,g1i,g1j,g1k,ci,cj,ck)
+			    print Rc,"\t",param[0],param[1] }
+
+		if (n==4) { dissect($2)
+			    g1i = ci
+			    g1j = cj
+			    g1k = ck
+			    dissect($3)
+			    g2i = ci
+			    g2j = cj
+			    g2k = ck
+			    dissect($4)
+			    correl_raw(fi,fj,fk,g1i,g1j,g1k,g2i,g2j,g2k,ci,cj,ck)
+			    print Rc,"\t",param[0],param[1],param[2] } 
+
+		}
+
+
+
+proc dissect()	{ 	/* turn compound number n into ci,cj,ck of data[i][j][k] */
+			if ($1 >= 1000 ) 	{ 		  ci = 1
+						  if ($1 >= 2000) ci = 2
+						  if ($1 >= 3000) ci = 0 
+						  $1 = mod($1,1000)  } else ci = 1
+			ck 	= int($1/100)
+			cj	= mod($1,100) 
+		}
+
+func antidissect() { 	local value /* turn data[i][j][k] into a number n = n(i,j,k) */
+			value  = $2
+			value += $3*100
+			value += $1*1000
+			if ($1==0) value += 3000
+			return value
+		   }
+			 
+proc clean() { for i = 0,$o1.size()-1      $o1.x[i] = mx( abs($o1.x[i]), 0.001) }
+
+
+
+proc correl_raw() {	local order, n, i
+			n = numarg()
+
+			vecx = data[$1][$2][$3].c
+
+				      veca  = data[$4][$5][$6].c
+				      clean(veca) 
+				      order = 1 
+			if (n >= 9) { vecb = data[$7][$8][$9].c 
+				      clean(vecb)
+				      order= 2 }
+			if (n==12) { vecc = data[$10][$11][$12].c
+				       clean(vecc)
+				       order= 3 }
+
+                     	if (n==7) { 	vecy = veca.c
+				    	Rcorrelation()
+					clabel(antidissect($1,$2,$3))
+					clabel(antidissect($4,$5,$6),1)
+					Ylab = ylab }
+
+                     	if (n==10) { 	for i = 0,3 val[i] =1
+					for i = 0,9 param[i] = 1
+
+				    	val[0] = correl_func2(1,&param)
+					param[0]=-1
+				    	val[1] = correl_func2(1,&param)
+					param[1]=-1
+				    	val[3] = correl_func2(1,&param)
+					param[0]= 1
+				    	val[2] = correl_func2(1,&param)
+
+			i = mn(val[0],val[1],val[2],val[3])
+			if (val[0]==i) { param[0]= 1 param[1]= 1 correl_func2(1,&param) }
+			if (val[1]==i) { param[0]=-1 param[1]= 1 correl_func2(1,&param) }
+			if (val[2]==i) { param[0]= 1 param[1]=-1 correl_func2(1,&param) }
+			if (val[3]==i) { param[0]=-1 param[1]=-1 correl_func2(1,&param) }
+					
+					clabel(antidissect($1,$2,$3))
+					clabel(antidissect($4,$5,$6),1)
+					Ylab = ylab 
+					sprint(Ylab,"%s^%2.1f",Ylab,param[0]) }
+
+
+
+			if (n!=7&&n!=10) {attr_praxis(1e-2,0.2,0)
+					sprint(str1,"correl_func%g",order)
+					for i = 0,9 { param[i] = 1 }
+					N_fitpraxis=0
+					fit_praxis(order+1,str1,&param)
+					clabel(antidissect($1,$2,$3))
+					clabel(antidissect($4,$5,$6),1)
+					Ylab = ylab
+					sprint(Ylab,"%s^%2.1f",Ylab,param[0]) }
+
+			if (n >=9) {	clabel(antidissect($7,$8,$9),1)
+					sprint(Ylab,"%s*%s^%2.1f",Ylab,ylab,param[1]) }
+
+			if (n==12) {	clabel(antidissect($10,$11,$12),1)
+					sprint(Ylab,"%s*%s^%2.1f",Ylab,ylab,param[2]) }
+
+			sprint(dataplotlab,"%s vs %s  (%s)",xlab,Ylab,ActiveModel)
+	if (forward)    sprint(dataplotlab,"%s fwd!",dataplotlab)
+		}
+
+
+
+
+
+
+
+func correl_func1()	{ 	/* 1 geometric measure [ veca^a = vecy] */
+			  	vecy.pow(veca,$&2[0])
+				{ Nfit_praxis += 1 if (Nfit_praxis>30000) stop_praxis() }
+			  	return Rcorrelation()	 
+			}
+
+
+func correl_func2()	{ 	/* 2 geometric measures [ veca^a*vecb^b = vecy] */
+			   	vecy.pow(veca,$&2[0])
+			   	ref.pow(vecb,$&2[1])
+			   	vecy.mul(ref)
+				{ Nfit_praxis += 1if (Nfit_praxis>50000) stop_praxis() }
+				return Rcorrelation()
+			}
+
+
+func correl_func3()	{ 	/* 3 geometric measures [ veca^a*vecb^b*vecc^c = vecy] */
+			   	vecy.pow(veca,$&2[0])
+			   	ref.pow(vecb,$&2[1])
+			   	ref2.pow(vecc,$&2[2])
+			   	vecy.mul(ref).mul(ref2)
+				{ Nfit_praxis += 1if (Nfit_praxis>100000) stop_praxis() }
+				return Rcorrelation()
+			}
+
+func Rcorrelation()   { local div,i
+			/* return 1 - R, where R is the correlation coefficient */
+			/* between vecy and vecx				*/
+
+			Rc = 0
+			for i = 0,vecx.size()-1  Rc += (vecy.x[i]-vecy.mean())*(vecx.x[i]-vecx.mean())
+			div = mx(1e-200, (vecx.size()-1)*vecy.stdev()*vecx.stdev())
+			Rc /= div
+			return 1 - abs(Rc) 
+			}
+
+
+
+
+/**********************************************************************
+  meta correlations
+ **********************************************************************/
+
+nonrank = 0
+
+proc single_corr() { 	local n, reference
+
+		/* correlate a single measure with all geometric&electrotonic measures */
+		/* with $1 which measure to correlate with (standard is nathreshold 3014)*/
+		/* with $2 (optional) specify, if powers 				  */
+		param[0] = 1
+		n = numarg()
+		if (forward) if (n==0) reference = 3014 else reference = $1
+		if (!forward) if (n==0) reference = 3014 else reference = $1
+
+		dissect(reference)
+		iX = ci
+		jX = cj
+		kX = ck
+	
+		for i = 0,2 corr[i] = new Vector()
+		for i = 0,2 goodcorr[i] = new Vector()
+
+		for ia = 1,2 { for ja = 0,J { for ka = 0,2 {
+
+		if (data[ia][ja][ka].size() > 1 ) {
+		// hack to make sure that the specific vector exists
+
+	        if (n<2) { correl_raw(iX,jX,kX,ia,ja,ka,1) } else { correl_raw(iX,jX,kX,ia,ja,ka) print param[0]} 
+
+		corr[0].append(Rc)			// correlation coefficient
+		corr[1].append(antidissect(ia,ja,ka))	// geometric parameter 1
+		corr[2].append(param[0])		// power
+			
+		// print antidissect(ia,ja,ka), "\t", "\t r = ", Rc, "\t^",param[0]
+
+						   }
+		}}}
+
+		// rank them
+		ref = corr[0].c
+		ref.apply("abs")
+		ref = ref.sortindex()
+		ref.reverse()
+
+		for i = 0,2 { goodcorr[i] = new Vector(ref.size()) }
+		for i = 0,2 { for j = 0,ref.size()-1 {goodcorr[i].x[j] = corr[i].x[ref.x[j]] }}
+if (nonrank)	for i = 0,2 { goodcorr[i] = corr[i] }
+		print "\n\n"
+
+		clabel(reference)
+		printf("Single correlation against %s\nActive model %s\n",str1,ActiveModel)
+		if (forward) printf("Forward propagation\n")
+		printf("\n")
+		for i = 0,ref.size()-1 { 
+		clabel(goodcorr[1].x[i])
+		printf("r %6.3f  power %3.2f  %4.0f  %s\n", \
+					goodcorr[0].x[i],\
+					goodcorr[2].x[i],\
+					goodcorr[1].x[i],\
+					str1) }
+
+			}
+
+
+proc single_corrf() { 	local n, reference
+			/* look at correlations of functional measures 				  */
+			/* with $1 (optional) specify, which functional measure to correlate with */
+			/* with $2 (optional) specify, if powers 				  */
+			param[0] = 1
+			n = numarg()
+			if (forward) if (n==0) reference = 3014 else reference = $1
+			if (!forward) if (n==0) reference = 3014 else reference = $1
+			dissect(reference)
+			iX = ci
+			jX = cj
+			kX = ck
+	
+			for i = 0,2 corr[i] = new Vector()
+			for i = 0,2 goodcorr[i] = new Vector()
+
+			ia = 0
+			{ for ja = 0,J { for ka = 0,2 {
+
+			if (data[ia][ja][ka].size() > 1 ) {
+			// hack to make sure that the specific vector exists
+
+		        if (n<2) { correl_raw(iX,jX,kX,ia,ja,ka,1) } else { correl_raw(iX,jX,kX,ia,ja,ka) print param[0]} 
+
+			corr[0].append(Rc)			// correlation coefficient
+			corr[1].append(antidissect(ia,ja,ka))	// geometric parameter 1
+			corr[2].append(param[0])		// power
+			
+			// print antidissect(ia,ja,ka), "\t", "\t r = ", Rc, "\t^",param[0]
+ 							   }
+			}}}
+
+			// rank them
+			ref = corr[0].c
+			ref.apply("abs")
+			ref = ref.sortindex()
+			ref.reverse()
+
+			for i = 0,2 { goodcorr[i] = new Vector(ref.size()) }
+			for i = 0,2 { for j = 0,ref.size()-1 {goodcorr[i].x[j] = corr[i].x[ref.x[j]] }}
+			print "\n\n"
+
+			clabel(reference)
+			printf("Single correlation against %s, Active model %s\n",str1,ActiveModel)
+			if (forward) printf("Forward propagation\n")
+			printf("\n")
+			for i = 0,ref.size()-1 { 
+			clabel(goodcorr[1].x[i])
+			printf("r %6.3f  power %3.2f  %4.0f  %s\n", \
+						goodcorr[0].x[i],\
+						goodcorr[2].x[i],\
+						goodcorr[1].x[i],\
+						str1) }
+			}
+
+
+proc double_corr() { 	local n
+			/* look at double correlations of geometric/electrotonic measures  */
+			/* with $1 (optional) specify, which functional measure to correlate with */
+			n = numarg()
+			if (n==0) dcorr=3014 else dcorr=$1
+			dissect(dcorr)
+			iX = ci
+			jX = cj
+			kX = ck
+	
+			for i = 0,6 corr[i] = new Vector()
+			for i = 0,6 goodcorr[i] = new Vector()
+
+			for ia = 1,2 { for ja = 0,J { for ka = 0,2 {
+
+			
+			for ib = ia,2 { for jb = ja,J { for kb = 0,2 {
+
+			if (data[ia][ja][ka].size() > 1 && data[ib][jb][kb].size() > 1) {
+			// hack to make sure that the specific vector exists
+
+			if (n!=2) correl_raw(iX,jX,kX,ia,ja,ka,ib,jb,kb)
+			if (n==2) correl_raw(iX,jX,kX,ia,ja,ka,ib,jb,kb,"no powers")
+
+			corr[0].append(Rc)			// correlation coefficient
+			corr[1].append(antidissect(ia,ja,ka))	// geometric parameter 1
+			corr[2].append(antidissect(ib,jb,kb))	// geometric parameter 2
+			corr[3].append(0)			// empty
+			corr[4].append(param[0])		// power of geometric parameter 1
+			corr[5].append(param[1])		// power of geometric parameter 2
+			corr[6].append(0)			// empty
+			
+			print antidissect(ia,ja,ka), "\t", antidissect(ib,jb,kb), "\t r = ", Rc }
+
+			}}}}}}}
+
+
+
+proc triple_corr() { 	local n
+			/* finds triplets of geometric measures and correlates */
+			/* them	with $1 (substitutively nathresh) */
+			n = numarg()
+			if (n==0) dissect(3014) else dissect($1)
+			iX = ci
+			jX = cj
+			kX = ck
+	
+			for i = 0,6 corr[i] = new Vector()
+
+			for ia = 1,2 { for ja = 0,J { for ka = 0,2 {
+			
+			for ib = ia,2 { for jb = ja,J { for kb = 0,2 {
+
+			if (data[ia][ja][ka].size() > 1 && data[ib][jb][kb].size() > 1) {
+			correl_raw(ia,ja,ka,ib,jb,kb,1)
+			if ( abs(Rc) < 0.5 )	{	// i,j are ok
+
+				
+			for ic = ib,2 { for jc = jb,J { for kc = 0,2 {
+			
+			if (data[ic][jc][kc].size() > 1) {
+
+			correl_raw(ia,ja,ka,ic,jc,kc,1)
+			if (abs(Rc) < 0.5)   correl_raw(ic,jc,kc,ib,jb,kb,1)
+			if (abs(Rc) < 0.5)   { 
+
+			correl_raw(iX,jX,kX,ia,ja,ka,ib,jb,kb,ic,jc,kc)
+
+			corr[0].append(Rc)			// correlation coefficient
+			corr[1].append(antidissect(ia,ja,ka))	// geometric parameter 1
+			corr[2].append(antidissect(ib,jb,kb))	// geometric parameter 2
+			corr[3].append(antidissect(ic,jc,kc))	// geometric parameter 3
+			corr[4].append(param[0])		// power of geometric parameter 1
+			corr[5].append(param[1])		// power of geometric parameter 2
+			corr[6].append(param[2])		// power of geometric parameter 3
+			
+	print antidissect(ia,ja,ka),"\t",antidissect(ib,jb,kb),"\t",antidissect(ic,jc,kc),"\tr = ",Rc }
+
+		}}}}}}}}}}}}}
+
+
+
+
+
+
+proc clegend() {	/* plot a legend for colour-coded cells */
+
+			ref = new Vector(1,0.001)       // makes an empty plot
+			fsize = 1
+			fig(ref,ref,0,0,0)
+			figlab(" ",0.05,1)
+			if (cellc.contains(0))	figlab("Pyramidal",colour.x[0])
+			if (cellc.contains(1))	figlab("Nigra",colour.x[1])
+			if (cellc.contains(2))	figlab("Purkinje",colour.x[2])
+			if (cellc.contains(3))	figlab("DG granule cell",colour.x[3])
+			figlab(" ",0.55,1)
+			if (cellc.contains(4))	figlab("DG interneuron",colour.x[4])
+			if (cellc.contains(5))	figlab("CA1 Pyramidal",colour.x[5])
+			if (cellc.contains(6))	figlab("CA3 Pyramidal",colour.x[6])
+			if (cellc.contains(7))	figlab("CA3 interneuron",colour.x[7])
+			figure[figcurrent].yaxis(3)
+			figure[figcurrent].unmap
+			figure[figcurrent].view(0,0,1,1,700,700,260,80)
+			fsize = 1
+		}
+
+
+proc averages() { local i,j,val, Mean, std, se, which
+
+		n = numarg()
+		if (n == 2) { str1 = $s2 } else {str1 = "nathreshold_average"} 
+		if (n >= 1) { val = $1 } else     {val = 3014} 
+		clabel(val)
+		dissect(val)
+
+
+for which = 1,2 {
+
+	if (which==1) { sprint(str2,"../neuron_output/%s",str1) wopen(str2) }
+	
+
+		ref3 = new Vector()
+		ref4 = new Vector()
+		ref5 = new Vector()
+
+		
+		fprint("%s %s\n",str1,ActiveModel)
+		fprint("cell type     \t mean\t         stdev\t          stderr\n")
+
+	
+	        for i = 0,7 { 
+				ref=new Vector()
+     	for ct=0,CellList.count-1 {if(CellList.object(ct).type==i) ref.append(data[ci][cj][ck].x[ct]) }
+
+				Mean = ref.mean
+				std  = ref.stdev
+				se   = ref.stderr
+			
+			if (i==0) fprint("Pyramidal    \t")
+			if (i==1) fprint("Nigra        \t")
+			if (i==2) fprint("Purkinje     \t")
+			if (i==3) fprint("DG granule   \t")
+			if (i==4) fprint("DG inter     \t")
+			if (i==5) fprint("CA1 Pyramidal\t")
+			if (i==6) fprint("CA3 Pyramidal\t")
+			if (i==7) fprint("CA3 inter    \t")
+			fprint("%8.4f\t%8.4f\t%8.4f\n",Mean,std,se)
+
+			ref3.append(Mean)
+			ref4.append(std)
+			ref5.append(se)			
+				}
+	if (which==1) { wopen() }
+
+  }
+
+			ref = ref3.c
+			ref = ref.sortindex()
+			ref.reverse()
+
+			ref2 = new Vector(ref3.size())
+			for i = 0,ref3.size()-1 { ref2.x[i] = ref3.x[ref.x[i]] }
+			ref3 = ref2.c
+
+			ref2 = new Vector(ref4.size())
+			for i = 0,ref4.size()-1 { ref2.x[i] = ref4.x[ref.x[i]] }
+			ref4 = ref2.c
+
+			ref2 = new Vector(ref5.size())
+			for i = 0,ref5.size()-1 { ref2.x[i] = ref5.x[ref.x[i]] }
+			ref5 = ref2.c
+
+			bar(ref3,0.8,0.2,1)
+			ref3.ploterr(figure[figcurrent],ref.indgen(1.1,8.5,1.0),ref4,10,1,0)
+			figlab(str1,0.2,0.9)
+			
+		}
+
+
+
+
+
+
+
+
+proc label_list() { local i,j,k, value
+
+		    i = 0
+		    for k = 0,2 { for j = 0,14 { value = antidissect(i,j,k) 
+						 clabel(value)
+						 fprint("%d\t%d %d %d\t%s\n",value,i,j,k,xlab)
+						 }}
+		    i = 1
+		    for k = 0,2 { for j = 0,26 { value = antidissect(i,j,k) 
+						 clabel(value)
+						 fprint("%d\t%d %d %d\t%s\n",value,i,j,k,xlab)
+						 }}
+
+		    i = 2
+		    for k = 0,2 { for j = 0,11 { value = antidissect(i,j,k) 
+						 clabel(value)
+						 fprint("%d\t%d %d %d\t%s\n",value,i,j,k,xlab)
+						 }}
+
+		}
+
+
+proc clabel()	{  /* set labels for cplot 
+		    if only one argument is passed, x is set, otherwise y */
+
+			dissect($1)
+		str1 = Data[ci][cj][0].str
+
+		if (ck==1) sprint(str1,"ln(%s)",str1)
+		if (ck==2) sprint(str1,"exp(%s)",str1)
+
+     			if (numarg() == 2) {
+						yi = ci
+						yj = cj
+						yk = ck
+						sprint(ylab,"%s",str1)
+					   } else {
+						xi = ci
+						xj = cj
+						xk = ck
+						sprint(xlab,"%s",str1)
+					    }
+		}
+
+proc Cplot() {	local n
+		/* plot of power correlation */
+		/* measure $1 against measures $2-$4  */
+		/* automatically save vector  */
+		/* vector name is the label of the plot (dataplotlab)  */
+
+		   n = numarg()
+
+		if (powers) {
+
+		   if (n==2) c($1,$2)
+		   if (n==3) c($1,$2,$3)
+		   if (n==4) c($1,$2,$3,$4)
+
+			}
+
+		if (!powers) {
+
+		   if (n==2) c3($1,$2)
+		   if (n==3) c3($1,$2,$3)
+		   if (n==4) c3($1,$2,$3,$4)
+
+				}
+		   if (n>1) writevecs(dataplotlab,vecx,vecy,cellc)
+		   cplot()
+
+		}
+
+
+proc powerplot() { local n
+		/* plot of power correlation */
+		/* measure $1 against measures $2-$4  */
+		/* automatically save vector  */
+		/* vector name is the label of the plot (dataplotlab)  */
+
+		   n = numarg()
+		   if (n==2) c($1,$2)
+		   if (n==3) c($1,$2,$3)54
+		   if (n==4) c($1,$2,$3,$4)
+		   if (n>1) writevecs(dataplotlab,vecx,vecy,cellc)
+		   cplot()
+			 }
+
+proc cplot() { local i, n, s, sz, done 
+		/* plots vecy vs vecx with label dataplotlab */
+		/* optional arguments; if specified will automatically save vector  */
+		/* vector name is the label of the plot (dataplotlab)  */
+		/* $1 first  measure */
+		/* $2 second measure */
+
+		n=numarg()
+		if (n>1)  c3($1,$2)
+		if (n>1)  writevecs(dataplotlab,vecx,vecy,cellc)
+			
+		done=0
+
+		for i = 0,9 { 	ref = cellc.c
+				ref.indvwhere("==",i)
+				sz = ref.size 		
+				if (sz>0) { 
+
+				ref2 	= new Vector(sz)
+				v1	= new Vector(sz)
+				v2	= new Vector(sz)
+				ref2.indgen()			
+				v1.copy(vecx, ref, ref2)			
+				v2.copy(vecy, ref, ref2)			
+				fig(v1,v2,1,done,colour.x[i])
+				done=1
+ 			}}
+
+		figlab(dataplotlab,0.22,0.03)
+		sprint(str1,"r = %g",Rc)
+		figlab(str1,0.2,0.9)
+		figure[figcurrent].unmap()
+		figure[figcurrent].view(xstart,ystart,xspread,yspread,xpos,ypos,330,200)
+
+		}
+
+
+
+proc get_geomorder() { local i,j,k
+			geomorder = new Vector()
+			i = 1
+			for k = 0,2 { for j = 0,ngeom { geomorder.append(antidissect(i,j,k)) }}
+
+			i = 0
+			for k = 0,2 { for j = 0,nfunc { geomorder.append(antidissect(i,j,k)) }}
+
+			i = 2
+			for k = 0,2 { for j = 0,nelec { geomorder.append(antidissect(i,j,k)) }}
+			
+			}
+
+proc multiplot() { local y, x, i
+		/* plot multiple correlations */
+		/* $1 says which set */
+		/* $2 says which vecx to correlate against */
+		clf()
+		n = numarg()
+		if (n>0) i	= $1*8 else i	  = 0
+		if (n>1) x  	= $2   else x     = 3014 // nathreshold
+		for y = i,i+7  { 
+			dissect(geomorder.x[y])
+			if (data[ci][cj][ck].size() > 1 ) {
+					 c3(x,geomorder.x[y],"plot") }} 
+		datalegend()
+		}
+
+
+
+proc datalegend() {
+
+	ref = new Vector(1,0.001)       // makes an empty plot
+	fsize = 1.5
+	fig(ref,ref,0,0,0)
+	figlab(" ",0.05,1)
+	if (cellc.contains(0))	figlab("Pyramidal",colour.x[0])
+	if (cellc.contains(1))	figlab("Nigra",colour.x[1])
+	if (cellc.contains(2))	figlab("Purkinje",colour.x[2])
+	if (cellc.contains(3))	figlab("DG granule cell",colour.x[3])
+	figlab(" ",0.55,1)
+	if (cellc.contains(4))	figlab("DG interneuron",colour.x[4])
+	if (cellc.contains(5))	figlab("CA1 Pyramidal",colour.x[5])
+	if (cellc.contains(6))	figlab("CA3 Pyramidal",colour.x[6])
+	if (cellc.contains(7))	figlab("CA3 interneuron",colour.x[7])
+	figure[figcurrent].yaxis(3)
+	figure[figcurrent].unmap
+	figure[figcurrent].view(0,0,1,1,700,700,260,80)
+	fsize = 1
+	}
+
+
+
+
+
+
+proc good_corr_func() { ref2.resize(ref.size())
+		     	ref2.indgen()
+			for i = 0,6 { goodcorr[i].copy(goodcorr[i].c,ref,ref2)
+				      goodcorr[i].resize(ref.size()) }
+			}
+
+proc good_doublecorr() { local n      /* extract the good correlations from the double correlation */
+				/* corr[] vectors */
+
+	n = numarg()
+	if (n>0) val = $1 else val = 0.92
+
+	for i = 0,6 goodcorr[i] = corr[i].c
+
+	ref2 = corr[0].c
+	ref2.apply("abs")
+	ref.indvwhere(ref2,">=",val)
+	print ref.size()
+     	good_corr_func()
+	ref2 = goodcorr[4].c
+	ref2.apply("abs")
+     	ref.indvwhere(ref2,">",0.2)
+	good_corr_func()
+	ref2 = goodcorr[4].c
+	ref2.apply("abs")
+     	ref.indvwhere(ref2,"<",5)
+	good_corr_func()
+	ref2 = goodcorr[5].c
+	ref2.apply("abs")
+     	ref.indvwhere(ref2,">",0.2)
+	good_corr_func()
+	ref2 = goodcorr[5].c
+	ref2.apply("abs")
+     	ref.indvwhere(ref2,"<",5)
+	good_corr_func()
+
+	ref2 = goodcorr[0].c
+	ref2.apply("abs")
+	ref = ref2.sortindex()
+	for k = 0,6 { ref2 = goodcorr[k].c 
+		      intermed = goodcorr[k].size()-1
+			for i = 0,intermed { goodcorr[k].x[intermed-i] = ref2.x[ref.x[i]] } }
+
+	if (n==1)      wopen("../good_correlations")
+	if (n==2)      wopen($s2) 
+
+		clabel(dcorr)
+		printf("Double correlation against %s %d   (%s)\n",str1,dcorr,ActiveModel)
+		fprint("Double correlation against %s %d   (%s)\n",str1,dcorr,ActiveModel)
+		if (forward) fprint("Forward propagation\n")
+		fprint("\n")
+
+	for i = 0,goodcorr[0].size()-1 {
+
+			clabel(goodcorr[1].x[i])
+			clabel(goodcorr[2].x[i],1)
+
+	sprint(str1,"%2.2f\t%1.0f %1.0f\t%s ^%1.1f\t%s ^%1.1f\t", goodcorr[0].x[i],\
+								goodcorr[1].x[i],\
+							        goodcorr[2].x[i],\
+								xlab,\
+								goodcorr[4].x[i],\
+								ylab,\
+								goodcorr[5].x[i])
+	print str1
+	fprint("%s\n",str1)}
+	fprint("\n\n\n")
+	if (n<3) wopen()
+		}
+
+
+
+
+proc checkit() { /* prints nathreshold, nathresholdvclamp && for all cells */
+
+		for i=0,41 printf("%d\t%3.1f\t%3.1f\t%3.1f\t%3.1f\n",i, \
+						  data[0][0][0].x[i],\
+						  data[0][14][0].x[i],\
+						  data[0][20][0].x[i],\
+						  data[0][21][0].x[i] )
+		}
+
+
+
+
+
+proc multi_correlation() { local i,reference, n
+
+		n=numarg()
+
+		multi = new Vector(3,1)
+		multi.x[0] = 3014
+		multi.x[1] = 3010
+		multi.x[2] = 3000	
+
+		if (forward) multi.resize(2)
+		if (hdecay)  multi.resize(2)
+
+		if (n==0) get_data(act0) else get_data($s1)
+
+
+if (!forward&&!hdecay) str2 = "../neuron_output/backpropagation"
+if (forward)           str2 = "../neuron_output/forward_soma200"
+if (hdecay)            str2 = "../neuron_output/forward_halfdecaymax"
+
+		wopen(str2)
+		for i=0,multi.size()-1 { reference = multi.x[i]
+
+		fprint("\n\ngeometric correlations\n================\n\n")
+		{ single_corr(reference)    write_singlecorr(reference) }
+		{ single_corr(reference,1)  write_singlecorr(reference) }
+
+		fprint("\n\nfunctional correlations\n================\n\n")
+		{ single_corrf(reference)   write_singlecorr(reference) }
+		{ single_corrf(reference,1) write_singlecorr(reference) }
+		
+				}
+
+		fprint("\n\n\nequivalent cable\n=====================\n\n")
+		mix=1
+		if (n==0) get_data(act0) else get_data($s1)
+		for i=0,multi.size()-1 { reference = multi.x[i]
+
+		{ single_corrf(reference)   write_singlecorr(reference) }
+		{ single_corrf(reference,1) write_singlecorr(reference) }		
+				}
+
+
+		fprint("\n\n\ndouble correlations\n=====================\n\n")
+		mix=0
+
+		if (n==0) get_data(act0) else get_data($s1)
+		for i=0,multi.size()-1 { reference = multi.x[i]
+
+		{ double_corr(reference)  	good_doublecorr(corr[0].max-0.1,1,1) }
+		{ double_corr(reference,1)    	good_doublecorr(corr[0].max-0.1,1,1) }		
+				}
+	        wopen()
+			}
+
+
+proc write_singlecorr() {
+
+		clabel($1)
+		fprint("Single correlation against %s %d  (%s)\n",str1,$1,ActiveModel)
+		if (forward) fprint("Forward propagation\n")
+		fprint("\n")
+		for i = 0,ref.size()-1 { if (abs(goodcorr[0].x[i]) > 0.4) {
+		clabel(goodcorr[1].x[i])
+		fprint("r %6.3f  power %8.2f  %4.0f  %s\n", \
+					goodcorr[0].x[i],\
+					goodcorr[2].x[i],\
+					goodcorr[1].x[i],\
+					str1) }}
+		fprint("\n\n")
+		}
+
+
+
+
+

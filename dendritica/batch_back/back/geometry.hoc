@@ -1,0 +1,1006 @@
+/* Relating dendritic geometry and signal propagation   */
+/* geometry.hoc Version 1.0                             */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+
+func fdistance() {	local frc,n
+
+		if (!electrotonicL) 	{
+				if ($1==0)    return distance(0)
+				if ($1==1)    return distance(1)
+				frc = (.5+int($1*nseg))/nseg    // midpoint of seg 
+
+				
+				return distance(frc)+($1-frc)*L*sign_pk
+					}
+
+		frc = (nseg*$1)-int(mx($1*nseg-1e-6,0))
+		if (!sign_pk) frc = 1-frc
+
+		return Xo_pk + Xfrc_pk($1) + frc*Xsec_pk($1)
+		}
+
+/**************************************************************************/
+
+func fL()	 {  if (!electrotonicL) return L return Xlen_pk }
+
+/**************************************************************************/
+
+func segL() 	{ if (!electrotonicL) return L/nseg  return Xsec_pk($1) }
+
+/**************************************************************************/
+
+func mindist() {local i,min
+
+		if (electrotonicL) return Xo_pk  
+
+		ifsec "soma"  { // soma is always tricky!!
+			min=fdistance(1)
+			for i = 0,nseg-1 { if (min>fdistance(i/nseg)) min=fdistance(i/nseg) }
+			return min
+				}
+		 
+		return mn(distance(0),distance(1))
+	       }
+
+/**************************************************************************/
+
+func maxdist() {  local i,max
+		
+		  ifsec "soma"  { 		// if origin is moved, then soma maxdist is non-trivial
+			max=fdistance(1)
+			for i = 0,nseg-1 { if (max<fdistance(i/nseg)) max=fdistance(i/nseg) }
+			return max
+				}
+
+		return mx(fdistance(0),fdistance(1))
+		 }
+ 
+/**************************************************************************/
+
+func farea() { local I
+		/* return membrane area within distance $1 from soma */
+		/* this one is used for the geometry calculations   */
+		/* includes spinescale corrections                  */
+ 
+		I = 0
+		forsec "soma"  		I+= sectionarea($1)*1
+		forsec dendritesI	I+= sectionarea($1)*spinescale
+		forsec dendritesII      I+= sectionarea($1)*spinescaleII
+		forsec dendritesIII   { dendarea = 0
+					for(x) dendarea+= area(x)
+					spinarea      	= 10*L
+					spinescaleIII	= (spinarea+dendarea)/dendarea
+					I+= sectionarea($1)*spinescaleIII
+				      }
+		return I
+	   }
+
+/**************************************************************************/
+
+func sectionarea() { local areavar,i,c,min,max,I
+	     /* return membrane area of a given section */ 
+	     /* within distance $1 from origin(originx) */
+
+	  	if(mindist()>$1)     		            return 0           /* completely out */
+	  	areavar = 0
+	  	if(maxdist()<$1){ for(x) areavar +=area(x)  return areavar   } /* completely in */
+										/* in between */
+		if (nseg==1) 				    return area(.5)*($1-mindist())/fL()
+
+		for i=0,nseg-1 {
+				c=(i+.5)/nseg
+				min = fdistance(c)-segL(c)/2
+				max = min+segL(c)
+				if (max<=$1) { areavar += area(c) } else {
+				if (min<=$1) { areavar += area(c)*($1-min)/segL(c) }}
+
+				}
+							    return areavar
+	         }
+
+/**************************************************************************/
+
+func fseg() {   local max, min /* calculate sum of diams of sections at dist $1 from soma */
+
+	diameterlist = new Vector()
+
+	forsec all {if ((maxdist()>=$1)&&(mindist()<$1)) {
+			diameterlist.append(diam(($1-mindist())/fL()))
+							 }
+		   }
+
+	if (diameterlist.size==0) { print "patch for distance ", $1 
+				    return no_of_sections }
+
+	no_of_sections     	= diameterlist.size()
+	sum_of_diameters	= diameterlist.sum()
+	mean_diameter		= diameterlist.mean()
+	equiv_crossdiameter	= (diameterlist.sumsq)^(0.5)
+	diameterlist.pow(3/2)
+	equiv_ralldiameter      = diameterlist.sum()^(2/3)
+	return no_of_sections
+
+       	    }
+
+/**************************************************************************/
+
+func fbranch() { 	local i, dmax
+			/* return branchnumber for section
+			   1 = 2 daughter branches
+			   0 = 1 daugheter branch
+			  -1 = termination */
+
+			branch_int 	= $2
+			branch 		= 0
+			termination 	= 0
+
+			origin.sec distance(0,originx)
+
+			forsec all {	if (maxdist()<($1+branch_int) && maxdist()>=$1)  { 
+						i = 0
+						subtree_traverse("{i+=1 }")
+						if (i >= 2) branch += i-1
+						if (i == 0) termination +=1  	   }		    
+			              }			
+			return branch
+		}
+
+/**************************************************************************/
+
+proc get_parent() { /* make Parent a SectionRef to the parent section */
+
+		root = 0
+		if (parent_section()) {
+					push_section(parent_section())
+					this_section() Parent = new SectionRef()
+					pop_section()
+					// Parent.sec print secname()
+
+					} else { 
+					this_section() Parent = new SectionRef()
+					root = 1 
+					}
+		}
+
+/**************************************************************************/
+
+func pbranchpoint() { /* if section is a branchpoint, return 1 */
+			j = 0
+		        Parent.sec subtree_traverse("j+=1")
+			branchnumber = j - 1
+			if (j>=2) return 1 
+			if (root==1) return 1
+			return 0			
+		   }
+
+/**************************************************************************/
+
+func nextparent() { Parent.sec get_parent()
+		    return pbranchpoint() }
+
+/**************************************************************************/
+
+func branchpoint() {	/* if section is a branchpoint, return 1 */
+			j = 0
+		        subtree_traverse("j+=1")
+			branchnumber = j - 1
+			if (j>=2) return 1
+			return 0			
+		   }
+
+/**************************************************************************/
+
+proc get_root()		{ /* put root into Parent  */
+
+			  Soma.sec get_parent()
+			  Parent.sec	{ while (!root) { get_parent() } } 				
+			}
+
+/**************************************************************************/
+
+proc ubranch() {local a 
+		this_section() Parent = new SectionRef()
+		a = 0
+		while (a==0) {  Parent.sec connection = parent_connection()
+				a = nextparent()
+				Parent.sec pdistance = fdistance(connection)
+			     }
+		udistance = abs(mindist() - pdistance)
+		}
+
+/**************************************************************************/
+
+proc get_rall() {	local i, k /* calculate the relative diameters of the parent to branch */
+
+			dchild.resize(0)	
+			dparent.resize(0)	
+			dY.resize(0)		
+			ch.resize(0)		
+
+			branchpointd.resize(0)		
+			relaread.resize(0)		
+			ralld.resize(0)		
+
+
+			/* create 3 Vectors [ dchild dparent dY ] */
+			get_children()
+			forsec children {  Y               = parent_connection()
+					   X               = section_orientation()
+					   X2              = X + diam_int/L - (X)*2*diam_int/L
+					   X2              = mn(X2,1)
+					   X2          	   = mx(X2,0)
+					   diameter_child  = (diam(X)+diam(X2))/2
+			       Parent.sec  diameter_parent = diam(Y)
+					   dY.append(Y)
+					   dchild.append(diameter_child)
+					   dparent.append(diameter_parent)
+					  }
+			
+			while (dY.size() >= 1) {
+
+				ref = dY.indvwhere("==",dY.x[0])
+
+				if (dY.x[0] != 1)    ch.append(dparent.x[0])
+
+				if (ref.size()==1) { ch.append(dchild.x[0])
+						     if (dY.x[0] != 1) rall_calc(dparent.x[0],ch) }
+
+				if (ref.size()>1)  { for i = 0,ref.size()-1 {ch.append(dchild.x[ref.x[i]])}
+						     rall_calc(dparent.x[0],ch)}
+									
+				ref  	= dY.indvwhere("!=",dY.x[0]) /* clean up */
+				dY   	= dY.ind(ref)
+				dchild  = dchild.ind(ref)
+				dparent = dparent.ind(ref)
+					     }
+		}
+
+/**************************************************************************/
+
+proc rall_calc() { local rall_children /* input parent, children */
+
+			parent = $1
+			rall_children = 0
+			for i = 0,$o2.size()-1 { rall_children += $o2.x[i]^(3/2) }
+			
+			branchpointd.append($o2.sum()/parent)
+			relaread.append( $o2.sumsq()/(parent^2))
+			ralld.append(rall_children/(parent^(3/2)))
+		}
+
+/**************************************************************************/
+
+proc ename() { 	
+		str1 = $s1
+		if (electrotonicL) sprint(str1,"a%s",str1)
+		sprint(str1,"%s = %s",str1,$s2)
+		execute(str1)
+
+		}
+		
+/**************************************************************************/
+
+func gstep()		{ 
+	/* returns the increment that is used for either el or physical lengths */
+
+	if (!electrotonicL) {
+
+if (strob.substr(cellname,"Purkinje")>-1) {stepdist=purkinjestep}else{stepdist=1}
+	 if (synthetic) stepdist = 5
+	
+	 return stepdist
+			    }
+	stepdist = 0.004
+	if (synthetic) stepdist = 0.02
+
+	return stepdist
+			}
+
+/**************************************************************************/
+
+proc make_dAr()         { local i
+		dAr.resize(Ar.size())
+		dAr.indgen(gstep(),gstep())
+		dAr.x[0] = Ar.x[0]
+	    	for i = 1,dAr.size()-1  { dAr.x[i] = (Ar.x[i]-Ar.x[i-1])/gstep() }
+			}
+
+/**************************************************************************/
+
+proc get_gdist()	{ /* sets size of gdist, dAr & Ar */
+
+		L_switch() /* make sure to get adist.max */
+		if (numarg()>0) L_switch($1)
+		{gdist.indgen(0,adist.max,gstep())   gdist.x[0] = gstep()/40 }
+		if (Ar.size>1) make_dAr()
+			}
+
+/**************************************************************************/
+
+proc geometry_calc()	{ local a, i, stemdiam, n, Distance, Diameter, bp, j
+		/* calculate all values necessary for geometry_save */
+		/* writes to vector "areas" */
+		/* for branchpoints finds distance to soma [SDist] */
+		/* upstream branch distance [DDist] */
+		/* parent diameter [Diam_abs] */
+		/* relative branch areas [Diam_relarea] */
+ 		/* rall ratio [Diam_rall] */
+
+		n = numarg()
+
+if (!equiv) {	
+
+	/*********************/
+	/* Rall values 	     */
+	/*********************/
+
+	somadist.resize(0)
+	updst.resize(0)
+	branchpointdiam.resize(0)
+	ralldiam.resize(0)
+	relareadiam.resize(0)
+	ralldiam.resize(0)
+	somadist_noend.resize(0)
+ 	updst_noend.resize(0)
+	branchpointdiam_noend.resize(0)
+	ralldiam_noend.resize(0)
+	relareadiam_noend.resize(0)
+	ralldiam_noend.resize(0)
+	terminationdist.resize(0)
+
+	forsec branchpoints {		ubranch()
+					updst.append(udistance)
+		if (!isterminal())	updst_noend.append(udistance)
+
+					somadist.append(fdistance(0))
+		if (!isterminal())	somadist_noend.append(fdistance(0))
+
+					get_rall()
+					branchpointdiam.append(branchpointd)
+					relareadiam.append(relaread)
+					ralldiam.append(ralld)
+		if (!isterminal()){	branchpointdiam_noend.append(branchpointd)
+					relareadiam_noend.append(relaread)
+					ralldiam_noend.append(ralld)	}}
+
+	forsec terminations   terminationdist.append(fdistance(1))
+
+	branchpoints_num       = ralldiam.size()
+
+	ename("branchdensity","mean(updst)")  
+	ename("branchdensity_noend","mean(updst_noend)")
+
+	length  = 0
+	forsec all length += fL() 
+	ename("branchdensityII","div(ralldiam.size(),length)")
+
+	length  = 0
+	forsec all_noend length += fL()	
+	ename("branchdensityII_noend","div(ralldiam_noend.size(),length)")
+
+	rallratio_peak		= 0
+	rallratio_mean		= 0
+	diamratio_peak		= 0
+	diamratio_mean 		= 0
+	rallratio_noend_peak	= 0
+	rallratio_noend_mean	= 0
+	diamratio_noend_peak	= 0
+	diamratio_noend_mean	= 0
+
+	if (ralldiam.size>0) {
+				  gauss(ralldiam,0.01,0.01) /* calculate ralldiam "peak" */
+	rallratio_peak		= gaussx.x[gaussy.indwhere("==",gaussy.max)]
+	rallratio_mean		= ralldiam.mean()
+				  gauss(branchpointdiam,0.01,0.01) 
+	diamratio_peak		= gaussx.x[gaussy.indwhere("==",gaussy.max)]
+	diamratio_mean 		= branchpointd.mean
+			}
+	
+
+	if (ralldiam_noend.size>0) {
+				  gauss(ralldiam_noend,0.01,0.01) 
+	rallratio_noend_peak	= gaussx.x[gaussy.indwhere("==",gaussy.max)]
+	rallratio_noend_mean	= ralldiam_noend.mean()
+				  gauss(branchpointdiam_noend,0.01,0.01)
+	diamratio_noend_peak	= gaussx.x[gaussy.indwhere("==",gaussy.max)]
+	diamratio_noend_mean	= branchpointdiam_noend.mean 
+			}
+
+
+
+
+	/********************************************************************/
+	/* calculate mean stem dendrite diameter (ref.mean) */
+	/********************************************************************/
+
+	ref = new Vector()
+	forsec "soma" { 
+			get_children()
+			forsec children { if (!issection("som*")) { if (!issection("hill*")) {
+						stemdiam = mn(1,5/L) 
+						ref.append(diam(stemdiam)) }}}}
+
+	ename("mean_stem_dendrite_diam","mean(ref)")
+
+
+	/********************************************************************/
+	/* taper = tap_ddiam.sum()/tap_ddist.sum()                          */
+	/********************************************************************/
+
+	tap_dist  = new Vector()
+	tap_ddist = new Vector()
+	tap_ddiam = new Vector()
+	forsec all {
+ 		 get_parent()
+		 Parent.sec bp = branchpoint()
+
+		if (!bp) {      i = .5/nseg
+			 	Distance = segL(i)
+				Diameter = diam(i)
+
+		      		Parent.sec	Distance += segL(i)
+				Parent.sec 	Diameter -= diam(1-i)
+
+				tap_ddist.append(Distance) 
+				tap_dist.append(fdistance(i))
+				tap_ddiam.append(Diameter)
+				}
+
+		if (nseg > 1) {
+
+		for i = 2,nseg { j = (i-.5)/nseg
+				 tap_ddist.append(segL(j))
+				 tap_dist.append(fdistance(j))
+				 tap_ddiam.append(diam(j) - diam(j-(1/nseg)))}
+		}}
+
+	ename("taper","div(tap_ddiam.sum,tap_ddist.sum)")
+
+	/********************************************************************/
+
+	}
+
+	if (n==0) {
+
+	/***************************************/
+	/* calculate area as a fxn of distance */
+	/***************************************/
+
+	{gdist.indgen(0,adist.max,gstep())   gdist.x[0] = 0.0001 }
+	Ar = gdist.c
+   	Ar.apply("farea")		
+	make_dAr()
+	if (!electrotonicL) temp = 25 else temp = 0.12
+
+	area_max	        = Ar.max
+	val = mn(temp/stepdist,dAr.size()-1) // patch to make sure no false copy
+	mdarea_max = dAr.c(val,dAr.size()-1).max
+	mdarea_maxdist = dAr.indwhere("==",mdarea_max)*gstep()
+
+	ename("darea_max","mdarea_max")
+	ename("darea_maxdist","mdarea_maxdist") 
+
+	writevec_el("areas",Ar)
+
+		}	
+
+}
+
+
+/* functions to avoid NaNs */
+
+func mean() { if ($o1.size()>0) return $o1.mean() else return 9999 }
+func div()  { if ($2!=0)        return $1/$2      else return 9999 }
+
+
+
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+
+/**************************************************************************/
+/* equivalent cylinder calculations                                       */
+/**************************************************************************/
+
+func equivalent_calc() { local i,temp, F
+
+	/* geometric transformation of cell to incorporate spines */
+
+	if (equiv) { print "equivalent_calc() cannot be applied to equivalent cables"
+			   return 1 }
+
+	//forsec "soma"  		
+	forsec dendritesI	spinetransform(spinescale)
+	forsec dendritesII      spinetransform(spinescaleII)				
+	forsec dendritesIII   { dendarea = 0
+				for(x) dendarea+= area(x)
+				spinarea      	= 10*L
+				spinescaleIII	= (spinarea+dendarea)/dendarea
+				spinetransform(spinescaleIII)				
+			      }
+
+	print "geometry changed; reload cell to continue working"
+
+	/* mean diameter [mdiam] and # sections as fxn(r) */
+	/**************************************************/
+
+   	origin.sec distance(0,originx)
+	sections.resize(gdist.size())
+	mdiam.resize(gdist.size())
+	cdiam.resize(gdist.size())
+	rdiam.resize(gdist.size())
+	for i=0,gdist.size()-1 {     
+			fseg(gdist.x[i])
+			sections.x[i]   = no_of_sections
+			mdiam.x[i]  	= mean_diameter
+			cdiam.x[i] 	= equiv_crossdiameter
+			rdiam.x[i]  	= equiv_ralldiameter  }	
+
+
+
+
+	if (!electrotonicL) { temp = 25 } else {temp=0.12}
+	val = mn(temp/stepdist,rdiam.size()-1) // patch to make sure no false copy
+	mdeq_max 	  = rdiam.c(val,rdiam.size()-1).max
+	ename("deq_max","mdeq_max")
+	ename("deq_maxdist","rdiam.indwhere(\"==\",mdeq_max)*gstep()")
+	ename("sections_mean","mean(sections)")
+	ename("sections_max","sections.max")
+	ename("sections_maxdist","sections.indwhere(\"==\",sections.max)*gstep()")
+	ename("diam_mean","mean(mdiam)")
+	ename("taper_mean","lintaper()")  // uses mdiam
+
+	writevec_el("cdiam",cdiam)
+	writevec_el("rdiam",rdiam)
+	writevec_el("mdiam",mdiam)
+	writevec_el("sections",sections)
+
+	return 1
+			}
+
+/**************************************************************************/
+double tmpx[1000]
+double tmpy[1000]
+double tmpz[1000]
+double tmpdiam[1000]
+
+
+proc spinetransform() { local tmpn,i 
+			tmpn = n3d()
+    			F = $1
+    			L *= F^(2/3)
+   
+			for i=0,tmpn-1 {
+					tmpx[i] = x3d(i)
+					tmpy[i] = y3d(i)
+					tmpz[i] = z3d(i)
+					tmpdiam[i] = diam3d(i)*F^(1/3)
+					}
+
+			pt3dclear()
+ 			for i=0,tmpn-1 { pt3dadd(tmpx[i], tmpy[i], tmpz[i], tmpdiam[i])  }
+			define_shape()
+  			}
+
+/**************************************************************************/
+
+proc make_equivalent_cable() { local i,j
+
+	/* need gstep & rdiam in the electrotonic domain */
+	/* create soma, dend with physical lengths */
+	
+	L_switch(1)
+	dX = gstep()
+
+	sprint(celladdress,"%sequiv",celladdress)	
+
+	writeveca("equiv")
+	fprint("create soma\n")	
+	fprint("create dend[%d]\n\n",rdiam.size()-1)	
+
+	fprint("soma.diam = %2.4f\n",  mx(rdiam.x[0],0.0001))
+	fprint("soma.L    = %2.8f\n\n",mx(100*dX*sqrt(0.25*Rm*rdiam.x[0]/Rax),0.00001))
+
+	fprint("dend[0].diam = %2.4f\n",  rdiam.x[1])
+	fprint("dend[0].L    = %2.4f\n",  100*dX*sqrt(0.25*Rm*rdiam.x[1]/Rax))
+	fprint("soma connect dend[0](0), 1\n\n")
+
+
+	for i = 2,rdiam.size()-1 { j = i-1
+
+		fprint("dend[%d].diam = %2.4f\n",  j, rdiam.x[i])
+		fprint("dend[%d].L    = %2.4f\n",  j, 100*dX*sqrt(0.25*Rm*rdiam.x[i]/Rax))
+		fprint("dend[%d] connect dend[%d](0), 1\n\n",j-1,j)
+
+				}
+	wopen()
+	cell_name(cell)  /* restore names */
+
+}
+
+
+
+/**************************************************************************/
+/* these procedures need to be checked by eye for outliers                */
+/**************************************************************************/
+
+
+proc slope_darea() {	local n	/* batch procedure */
+			/* writes to "d2area" */
+			/* calculates d2area_max,d2area_maxdist,*/
+			/*d2Area_maxAr_ratio,d2area_maxAr_percent */ 
+			/* $s1 cell */
+			/* $s2 active model */
+			/* n>2 print figure at distance $3 */
+			/* n=4 don't write results */
+			/*   e.g. slope_darea(int2,act0) */
+
+			n = numarg()
+			if (n>0) cell_name($s1)
+			if (n>1) ActiveModel=$s2
+			activecell = cellname
+			dAr   = new Vector()
+			Ar    = new Vector()
+			gdist = new Vector()
+			readvec("areas",Ar)
+			electrotonicL=0
+			make_dAr()
+			{gdist.indgen(0,(dAr.size+1)*gstep(),gstep())   gdist.x[0] = 0.0001 }
+
+			if (n<3) rolling(gdist,dAr,63)
+			if (n==3) rolling(gdist,dAr,63,"print figure",$3)
+			if (n==4) rolling(gdist,dAr,63,"print figure")
+
+			fprint("d2area_max           = %2.4f\n", d2area_max)
+			fprint("d2area_maxdist       = %2.4f\n", d2area_maxdist)
+			fprint("d2area_maxAr_ratio   = %2.4f\n", d2area_maxAr_ratio)
+			fprint("d2area_maxAr_percent = %2.4f\n", d2area_maxAr_percent)
+
+			if (n<4) writevec("darea")
+			fprint("d2area_max           = %2.4f\n", d2area_max)
+			fprint("d2area_maxdist       = %2.4f\n", d2area_maxdist)
+			fprint("d2area_maxAr_ratio   = %2.4f\n", d2area_maxAr_ratio)
+			fprint("d2area_maxAr_percent = %2.4f\n", d2area_maxAr_percent)
+			if (n==3) fprint("// modified manually\n")
+			if (n<4) wopen()
+		}
+
+/**************************************************************************/
+
+proc slope_deq() {	local n
+			/* calculates ddeq_max,ddeq_maxdist,*/
+			/* ddeq_maxAr_ratio,ddeq_maxAr_percent */ 
+			/*   $s1 cell */
+			/*   $s2 active model */
+			/*   $3 manually set maximum in x (optional) */
+			/*   $4 do not set slope - just check to see */
+			/*   e.g. slope_deq(int2,act0) */
+			n = numarg()
+			if (n>0) cell_name($s1)
+			if (n>1) ActiveModel=$s2
+			activecell = cellname
+			rdiam = new Vector()
+			gdist = new Vector()
+			readveca("rdiam",rdiam)
+			electrotonicL=1
+			{gdist.indgen(0,(rdiam.size+1)*gstep(),gstep())   gdist.x[0] = 0.0001 }
+			if (n<3)  rolling2(gdist,rdiam,63)
+			if (n==3)  rolling2(gdist,rdiam,63,"print figure",$3)
+			if (n==4)  rolling2(gdist,rdiam,63,"print figure")
+
+			fprint("ddeq_max           = %2.4f\n", d2area_max*100)
+			fprint("ddeq_maxdist       = %2.4f\n", d2area_maxdist)
+			fprint("ddeq_maxAr_ratio   = %2.4f\n", d2area_maxAr_ratio)
+			fprint("ddeq_maxAr_percent = %2.4f\n", d2area_maxAr_percent)
+
+			if (n<4)  writeveca("ddeq")
+			fprint("ddeq_max           = %2.4f\n", d2area_max*100)
+			fprint("ddeq_maxdist       = %2.4f\n", d2area_maxdist)
+			fprint("ddeq_maxAr_ratio   = %2.4f\n", d2area_maxAr_ratio)
+			fprint("ddeq_maxAr_percent = %2.4f\n", d2area_maxAr_percent)
+			if (n==3) fprint("// modified manually\n")
+			if (n<4) wopen()
+		}
+
+
+
+/**************************************************************************/
+/* procedures requiring manual supervision */
+/**************************************************************************/
+
+
+proc dAdr_calc() { local n
+/* calculates dAdr (has to be checked manually) */
+/* written into "dAdr" */
+/* $s1 specifies cell */
+/* n==1 calculate and save dAdr */
+/* n==2 calculate and display dAdr (don't save) */
+/* n==3 calculate and display dAdr; save max ($2) min ($3) */
+/* n==4 calculate and display and save dAdr */
+
+	 	  n = numarg()		
+		  cell_name($s1)
+		  electrotonicL=0
+		  Ar    =new Vector()
+		  dAr   =new Vector()
+		  gdist =new Vector()
+		  readvec("areas",Ar)	
+		  gdist.resize(Ar.size)
+		  { gdist.indgen(0,gstep()) gdist.x[0]=0.0001 }
+		  make_dAr()
+
+		  if (n==1) estcore(dAr,1) else  estcore(dAr)
+		  if (n==1) dAdr_write(max,min)
+		  if (n==3) dAdr_write($2,$3)
+		  if (n==4) dAdr_write(max,min)
+
+		}
+
+/**************************************************************************/
+
+proc dAdr_write() {     local n /* writes to "dAdr" */
+			n=numarg()
+			if (n>3) ActiveModel=$s4
+			if (n>2) cell_name($s3)
+			if ($1 < $2) print "please type values in again\n"
+			fprint("dAdr_relmax	= %2.4f\n",$1)			
+			fprint("dAdr_relmin	= %2.4f\n",$2)			
+			fprint("dAdr_ratio	= %2.4f\n",$1/$2)			
+			writevec("dAdr")
+			fprint("dAdr_relmax	= %2.4f\n",$1)			
+			fprint("dAdr_relmin	= %2.4f\n",$2)			
+			fprint("dAdr_ratio	= %2.4f\n",$1/$2)			
+			wopen()
+		}
+
+/**************************************************************************/
+
+proc deq_calc() { local n
+		/* calculates deq (has to be checked manually) */
+		/* written into "deq" */
+		/* $s1 specifies cell */
+		/* n==1 calculate and save deq */
+		/* n==2 calculate and display deq (don't save) */
+		/* n==3 calculate and display deq; save max ($2) min ($3) */
+		/* n==4 calculate and display and save deq */
+
+		n = numarg()
+		  cell_name($s1)
+
+		  electrotonicL=1
+		  rdiam=new Vector()
+		  gdist=new Vector()
+		  readveca("rdiam",rdiam)
+		  gdist.resize(rdiam.size)
+		  { gdist.indgen(0,gstep()) gdist.x[0]=0.0001 }
+
+		  if (n==1) estcore(rdiam,1) else estcore(rdiam)
+		  if (n==1) deq_write(max,min)
+		  if (n==3) deq_write($2,$3)
+		  if (n==4) deq_write(max,min)
+		}
+
+
+proc deq_write() {      local n /* writes to "deq" */
+			n=numarg()
+			if (n>3) ActiveModel=$s4
+			if (n>2) cell_name($s3)
+			if ($1 < $2) print "please type values in again\n"
+			fprint("deq_relmax	= %2.4f\n",$1)			
+			fprint("deq_relmin	= %2.4f\n",$2)			
+			fprint("deq_ratio	= %2.4f\n",$1/$2)			
+			writeveca("deq")
+			fprint("deq_relmax	= %2.4f\n",$1)			
+			fprint("deq_relmin	= %2.4f\n",$2)			
+			fprint("deq_ratio	= %2.4f\n",$1/$2)			
+			wopen()
+		}
+
+
+
+
+/**************************************************************************/
+
+proc estcore() { local n, start
+		n = numarg()
+
+		if (electrotonicL)  start = 0.12/gstep() else start = 25/stepdist
+		max =$o1.c(start, $o1.size()-1).max
+		min =$o1.c(start,mx($o1.indwhere("==",max),start)).min
+
+		maxx = gdist.x[$o1.indwhere("==",max)]
+		minx = gdist.x[$o1.indwhere("==",min)]
+
+		ref = new Vector(2,min)
+		ref2 = new Vector(2,minx)
+		ref.x[1] = max
+		ref2.x[1] = maxx
+
+    if (n<2) {  fig(gdist,$o1)
+		figlab(cellname,0.2,0.9)
+		fig(ref2,ref,1,1,2,8,"o")
+		figure[figcurrent].unmap
+	        figure[figcurrent].view(0,0,gdist.max,$o1.max,0,100,1000,500) }
+		print "min = ",min, "\tmax = ", max
+		}
+
+/**************************************************************************/
+
+func tap()     { /* ugly function for section taper */
+
+		tobj 	= gdist.c
+		tobj.mul(0.001*$&2[0]).add($&2[1])
+
+		return   mdiam.meansqerr(tobj)
+		}
+
+/**************************************************************************/
+
+func lintaper(){ /* ugly linear regression for section taper */
+
+		if (!electrotonicL) param[0] = -1 else param[0] = -1000
+		param[1] = 10
+
+                attr_praxis(1e-5,4,0)
+                fit_praxis(2,"tap",&param[0])
+                return param[0] // slope in 1/mm 
+                }
+
+
+
+
+
+
+
+
+
+func get_link()		{ local i,ok
+		/* find sections between given section G and origin O [exclusive] */
+		/* sign_pk = 1 if G is downstream of O or neutral wrt O */
+		/* returns link, sign_pk and origin_c */
+
+		link=new SectionList()
+		sign_pk=1    
+		origin_c   = parent_connection()
+ 
+		ifsec originsec  { if (originx>0.5) sign_pk=-1 return 1	}
+		get_parent()
+		ok=0
+		Parent.sec 	ifsec originsec  ok=1
+		if (ok) return 1
+
+		// search append G -> O
+
+		while (!root) {	Parent.sec link.append()
+				Parent.sec origin_c = parent_connection() 
+				Parent.sec get_parent()
+				Parent.sec ifsec originsec  ok = 1
+				if (ok) return 1
+			        }
+
+			//  O is not root
+			//  O is not upstream of G
+			//  O  may be downstram of G
+			//  put link > link2
+			//  search O -> G 
+			// Hypothesis: G upstream of O 
+
+			sign_pk=-1 	
+			link2 = new SectionList()
+			forsec link { link2.append() link.remove() } 
+			origin.sec   origin_c = parent_connection()
+		    	origin.sec   get_parent()
+			str1 = secname()
+
+		    	while (!root) { Parent.sec link.append()
+					Parent.sec get_parent()
+					Parent.sec ifsec str1 	ok = 1
+					if (ok) return 1  
+				      }
+			
+			// G is neutral with respect to O
+			// combine  link + link2 */
+			// all sections which appear in both sectionlists must disappear
+			// combine sections which appear in only one of the two sectionlists
+
+			sign_pk=1
+			forsec link2 {	ifsec link { link.remove() link2.remove()}}
+			forsec link2 {  link.append() }
+			forsec link2 link2.remove()
+			link2.append()
+			forsec link2 { ifsec link { link.remove() }}
+			
+			return 1
+			}
+
+
+proc set_electrotonic() { local Lx, i, lambdax, f, oseg, Xcum, toggle, c, d, xo
+
+		/* set the electrotonic distances for all segments */
+		/* set Xsec for each segment */
+		/* Xfrc_pk is fraction of section Length before given segment */
+		/* Xo_pk is base length */
+
+		if (!electrotonicL) toggle=1 else toggle=0
+		L_switch(1)
+
+		forsec all { Lx      = L/nseg 	
+		      	 Xlen_pk = 0
+			 for i = 1,nseg {  f 		= (i-.5)/nseg
+					  lambdax 	= sqrt(diam(f)/(4e-4*g_pas*Ra))
+					  Xsec_pk(f)  	= Lx/lambdax 
+					  Xlen_pk      += Xsec_pk(f)
+					}
+
+			Xcum    = 0
+			get_link()  // get sign_pk
+		        for i = 1,nseg {  f 		= (i-.5)/nseg
+					  Xfrc_pk(f)    = Xcum
+					  Xcum         += Xsec_pk(f)
+					  if (!sign_pk) Xfrc_pk(f) = Xlen_pk-Xcum //!!!
+				       }
+			 }
+
+		if (originx!=1) {  /* Xfrc is slightly different here */
+			
+		access origin.sec   
+
+		oseg = (nseg*originx)-int(mx(originx*nseg-.0001,0))+1  // which seg is origin
+		for(x) Xfrc_pk(x) = Xsec_pk((oseg-.5)/nseg)
+		Xfrc_pk((oseg-.5)/nseg) = 0   // sufficient until nseg >3
+
+		if (nseg>3) {	
+
+				for i=1,nseg { 	
+
+		if (i<oseg-1) for j=i+1,oseg-1 { Xfrc_pk((i-.5)/nseg) += Xsec_pk((j-.5)/nseg) }
+		if (i>oseg+1) for j=oseg+1,i-1 { Xfrc_pk((i-.5)/nseg) += Xsec_pk((j-.5)/nseg) }
+						}			
+			     }			
+				}
+
+
+
+
+		forsec all  Xo_pk = 0
+		forsec all  {
+
+  		get_link()    
+		origin.sec.Xo_pk = 0
+		origin.sec   xo=fdistance(origin_c) // how much of origin section to be added
+		forsec link  xo += Xlen_pk 
+		Xo_pk = xo
+		origin.sec.Xo_pk = 0
+
+			    } 
+
+		if (toggle)  L_switch(0) 
+		}

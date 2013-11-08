@@ -1,0 +1,6 @@
+cells = 4
+xopen("../data/cells/p18.hoc")
+xopen("../data/cells/p21.hoc")
+xopen("../data/cells/p22.hoc")
+xopen("../data/cells/pds.hoc")
+

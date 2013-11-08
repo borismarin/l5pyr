@@ -1,0 +1,2 @@
+#!/bin/sh
+special_kvznaz <batch2.hoc >stdout2 2>stderr2 &

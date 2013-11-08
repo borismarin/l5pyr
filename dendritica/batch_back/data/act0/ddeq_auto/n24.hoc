@@ -1,0 +1,4 @@
+ddeq_max           = 0.0330
+ddeq_maxdist       = 1.4840
+ddeq_maxAr_ratio   = 0.0576
+ddeq_maxAr_percent = 0.0545

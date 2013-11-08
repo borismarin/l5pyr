@@ -1,0 +1,643 @@
+/* Relating dendritic geometry and signal propagation   */
+/* electrophysiology.hoc Version 1.0                    */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+proc rest() { 	local i,n /* set neuron to steady-state resting potential and t = 0 */
+
+		n=numarg()
+		inactive vclamp.loc(0)  // take out electrode until rest is achieved
+		inactive st.loc(0)
+		inactive synapse.loc(0)
+
+
+		finitialize(-70.494513)  // actual resting - already perfect setting for act0
+		t   = - Rest_dur
+		dt  = Rest_dur/10
+       	        while (t<0) fadvance()
+		finitialize()
+
+
+		if (!n) { // usually put point processes back in
+			Iclamp.sec st.loc(Iclampx) 
+			Vclamp.sec vclamp.loc(Vclampx) 
+			Synapse.sec synapse.loc(Synapsex) 
+			}
+
+		if (movie) { doEvents()  splot.flush() }
+		}
+
+/**********************************************************************************/
+
+proc simcore()  {/* simulation-core (equivalent to run) */
+
+		rest("leave point processes off")
+
+		if (simMode==0)	Iclamp.sec st.loc(Iclampx) 
+		if (simMode==1) Vclamp.sec vclamp.loc(Vclampx) 
+		if (simMode==5) Synapse.sec synapse.loc(Synapsex) 
+
+
+		dt = sim_dtI
+		if (sim_durI>0) while (t<sim_durI) { fadvance() }
+		dt = sim_dt
+		while (t<(sim_durI+sim_dur))  { fadvance()
+						if (movie) { doEvents() splot.flush() } 
+					      }
+
+		forall for(x)   { // 20.8.98
+		  vhalf_pk(x)     = vpeak_pk(x)/2 + vonset_pk(x)/2
+		  onset_ref_pk(x) = dvdtpeak_pk(x)*sqrt(abs(1.44/(vpeak_pk(x)+73)-1/93)) 
+		  if (forward)	        vonset_pk(x) = vrest_pk(x)
+		  if (diffvonset)	vonset_pk(x) = vrest_pk(x)
+		  // 8.4.99 after discussion with MH AR PV
+				}
+		  }
+
+/**********************************************************************************/
+
+proc sim()	{ local n, st_intensitysave, vclamp_dursave,mn,mx
+	/* this is the core simulation procedure */
+	/* composed of Rest and then actual simulation */
+	/* specify, whether voltage clamp or current clamp */
+	/*****************************************************/
+	/* sim runs the simulation */
+	/* it is composed of rest() and simcore() */
+	/* 					*/
+	/* simulations come in four flavours */
+	/* simMode 0	IClamp at originx */
+	/* simMode 1 	VClamp at originx */
+	/* simMode 2	IClamp at originx g_na = 0 */
+	/* simMode 3	VClamp at originx g_na = 0 */
+
+
+	n = numarg()
+	if (movie) { initPlot()  }
+
+	// save locations of point processes
+
+	Vclampx    = vclamp.get_loc()
+	sectionname(sec)
+	sec Vclamp = new SectionRef()  
+	pop_section()
+
+	Iclampx    = st.get_loc()
+	sectionname(sec)
+	sec Iclamp = new SectionRef()  
+	pop_section()
+
+	Synapsex    = synapse.get_loc()
+	sectionname(sec)
+	sec Synapse = new SectionRef()  
+	pop_section() 
+
+
+	rec_set()       // set recording options
+
+
+	if (simMode==0) {
+			/* Current clamp */
+			simcore()
+			if (!movie)	simcore()
+			}
+
+	if (simMode==1) {
+			/* Voltage clamp */
+			/* play p18 somatic AP waveform */
+			/* scale waveform by $1 (optional) */
+			/* specify waveform vector with $o2 (optional) */
+
+
+			if (n==2) set_waveform($o2.c)
+			if (n==3) set_waveform($s2,1)
+			if (waveform.size()==0) {  set_waveform() }
+			wave = waveform.c
+			mn = wave.min
+			mx = wave.max
+			if (n>0) wave.scale(mn,mn+$1*(mx-mn))
+			wave.play(&vclamp.amp1)		
+
+			simcore()
+			if (!movie) simcore()
+			}
+
+	if (simMode==2) {	
+			/* Vclamp passive geometry but use IClamp waveform */
+			simMode=0
+			simcore()     /* get the vector to play */
+			simMode=1
+			active_set(0,g_kv,0)
+			ref2 = vsoma.c
+			ref2.play(&vclamp.amp1)		
+			simMode=2
+			simcore()
+			}
+
+	if (simMode==3) {	
+			/* do passive AP  with VClamp */
+			simMode=1
+			active_set(0)
+
+			if (n==2) set_waveform($o2.c)
+			if (n==3) set_waveform($s2,1)
+			if (waveform.size()==0) {  set_waveform() }
+			wave = waveform.c
+			mn = wave.min
+			mx = wave.max
+			if (n>0) wave.scale(mn,mn+$1*(mx-mn))
+			wave.play(&vclamp.amp1)		
+
+			simcore()
+			if (!movie) simcore()
+			active_set()
+			simMode=3
+			}
+
+	if (simMode==5) {	
+			/* do Synapse */
+			simcore()
+			if (!movie) simcore()
+			}
+
+			Iclamp.sec st.loc(Iclampx)
+			Vclamp.sec vclamp.loc(Vclampx)
+			Synapse.sec synapse.loc(Synapsex)
+
+	}
+
+/**********************************************************************************/
+
+
+
+
+
+
+
+
+proc initsimvclamp() {
+			ActiveModel = $s1
+			get(p18.loc,ActiveModel,"no read")
+			threshold_find()
+			st_set(st_intensity)
+			simMode = 0
+			sim()
+       			sprint(cellvar,"../data/%s/simvclamp_p18",ActiveModel)
+			fileob.wopen(cellvar)
+			vsoma.c.vwrite(fileob)
+			}
+
+
+
+
+
+/*****************************************************************/
+
+proc dvdr_calc() {	local i, x, V1
+			forall  {get_parent()
+				Parent.sec dr  = .5*L/nseg
+				Parent.sec V1  =  vpeak_pk((nseg-.5)/nseg) 
+					   dr += .5*L/nseg
+					    x  = .5/nseg
+			dvdr_pk(x) = (vpeak_pk(x)-V1)/(.5*(vpeak_pk(x)+V1) - vonset_pk(x))/dr
+					
+				if (nseg > 1) { 
+						dr = L/nseg
+						V1 = vpeak_pk(x) 
+						for i = 2,nseg {  x = (i-.5)/nseg 
+			dvdr_pk(x) = (vpeak_pk(x)-V1)/(.5*(vpeak_pk(x)+V1) - vonset_pk(x))/dr
+	 				        V1 = vpeak_pk(x) }
+						}  } 				
+		}
+
+/*****************************************************************/
+
+func sim_err() {
+		/* run simulation of active model, calculate error of settings */
+		/* -> used for fitting routine	*/
+
+		active_set($&2[0],$&2[1],$&2[2])    
+		finitialize()
+		active_run()
+		return err
+		}
+
+/*****************************************************************/
+
+proc sim_fit() {    
+		/* fit active parameters */
+		/* $1 gbar_kv/100 */
+		/* $2 gbar_na/100 */
+		/* $3/10'000 gbar_na (node) */
+
+		param[0] = $1
+		param[1] = $2
+		param[2] = $3
+		act_init()
+		attr_praxis(1e-5,5000,0)
+		fit_praxis(3,"sim_err",&param[0])	
+	          }
+
+/*****************************************************************/
+
+proc rinput_calc()     { local vx,sx,syx
+			/* calculate input resistance */
+			/* put result in vector rin  */
+
+	rest("don't put back")
+
+	Soma.sec 	impR = new Impedance()
+	Soma.sec	impR.loc(0.5)
+	Soma.sec	impR.compute(0)
+	Soma.sec	rin.x[0] = impR.input(0.5)
+		   print "Rin = ", rin.x[0] 
+	rest()
+
+		      }
+
+/*****************************************************************/
+
+proc sim_calc() {	local i, j, k
+			/* calculate values from simulation run     			*/
+			/* vectors vpk, amp, vmax, plat, olat, half			*/
+			/* site of initiation						*/
+			/* err - deviation from experimental data in Pyramidal cells	*/
+
+		err_amp = err_vmax = err_plat = err_olat = initiation = 0
+
+		dvdr_calc()
+
+		i=0
+		vpk.resize(0)
+		amp.resize(0)
+		vmax.resize(0)
+		plat.resize(0)
+		olat.resize(0)
+		half.resize(0)
+		dvdr.resize(0)
+				
+	   	forsec distlist { for j=0,nseg-1 {
+						k = (j+.5)/nseg
+						vpk.append(vpeak_pk(k))
+						amp.append(vpeak_pk(k)-vonset_pk(k))
+						vmax.append(dvdtpeak_pk(k))
+						plat.append(tpeak_pk(k) - Soma.sec.tpeak_pk)
+						olat.append(onset_pk(k)-Soma.sec.onset_pk)
+						dvdr.append(dvdr_pk(k))
+						half.append(halfwidth_pk(k))
+						 } }
+
+
+		/* calculate measure of error for active parameter settings */
+
+		g = 0 
+		forall ifsec "iseg[1]" g = 1
+		
+		if ((numarg()<1)&&(g)){
+		ref = dist.c
+		err_amp  += amp.meansqerr(ref.div(-amp_lmd).apply("exp")\
+			   .mul(amp_max).add(amp_bas))/amp.max
+		ref = dist.c
+		err_vmax += vmax.meansqerr(ref.div(-vmax_lmd).apply("exp")\
+			   .mul(vmax_amp))/vmax.max
+		ref = dist.c
+		err_plat += plat.meansqerr(ref.div(plat_s))/1.2
+		ref = dist.c
+		err_olat += olat.meansqerr(ref.div(olat_s))/0.5
+
+		isg = iseg.tpeak_pk 
+		sma = Soma.sec.tpeak_pk 
+		nde = node[0].tpeak_pk 
+		
+		if (sma <  isg && isg <= nde) print i, "initiation soma -> iseg -> node"
+		if (sma >  isg && isg >= nde) print i, "initiation node -> iseg -> soma"
+		if (sma >  isg && isg <  nde) {
+			if (sma < nde)	    { print i, "initiation iseg -> soma -> node"}\
+			else	            { print i, "initiation iseg -> node -> soma"} }
+		if (sma ==isg && isg <= nde)  print i, "initiation soma == iseg -> node"
+		if (sma ==isg && isg > nde)   print i, "initiation node -> iseg == soma"
+
+		if (iseg.tpeak_pk > Soma.sec.tpeak_pk) initiation += 1000000
+		err = err_amp*2 + err_vmax + err_plat + err_olat + initiation }
+              
+
+
+		sprint(str1,"g_kv %g  g_na %g  g_na(node) %g  err %g", Soma.sec.gbar_kv,\
+								       Soma.sec.gbar_na,\
+								       node[0].gbar_na,err)
+		if (numarg() < 1) print str1
+		
+		}
+
+
+
+
+
+
+
+/*****************************************************************/
+/* threshold_calc() -> threshold_find() -> threshold() -> thresh */
+/*****************************************************************/
+
+
+proc threshold_calc() {
+	/* calculate various thresholds, which quantify the amount */
+	/* of backpropagation in the cell. */
+	/* - g_na threshold when all sections are depolarized >0 mV */ 
+	/* - g_na threshold when all sections are depolarized >0 mV (VClamp p18 somatic AP) */ 
+	/* - g_na threshold when terminations are depolarized >0 mV */ 
+	/* - g_na threshold when terminations are depolarized >0 mV (VClamp p18 somatic AP) */ 
+	/* - AP amplitude 200 um from soma relatic to somatic AP amplitude */ 
+	/* - AP amplitude 200 um from soma relatic to somatic AP amplitude (passive cell) */ 
+	/* - AP amplitude 200 um dependence on g_na */ 
+
+		rinput_calc()
+		input_resistance = rin.x[0]			
+		threshold_find(1,0) /* (all>0mV) */
+		remove_axon()
+		threshold_find(1,1) /* vlcamp p18 somatic AP waveform (all>0mV) */
+		threshold_find(3,1) /* vlcamp p18 somatic AP waveform (terminations>0mV)*/
+		APdecay_sensitivity()
+		APdecay(1) // active 
+		APdecay(3) // passive 
+
+			}
+
+/*****************************************************************/
+
+proc forwardthreshold_calc() {
+
+	/* for forward propagation, only VClamp commands make sense */
+	/* just look for depolarizations > injection  at the soma */
+	/* it won't work for all sections, since they are far & there is decay */
+	/* finds g_na thresh with AP200 waveform (soma) */
+
+if (!equiv) threshold_find(0,1) else {if (diffvonset) threshold_find(5,1) else threshold_find(1,1) }
+
+	APdecay(1)  			// active 
+	APdecay(3)  			// passive
+
+	rinput_calc()
+	input_resistance = rin.x[0]			
+
+			}
+
+/*****************************************************************/
+
+proc threshold_find() { local n, value, where, dx, hi, lo
+			/* find stimulation threshold to initiate nodal AP while g_na = 0 */
+			/* time limit is 15 msec 					  */
+			/* With this stimulus find g_na treshold that depolarizes all	  */
+			/* sections beyond 0 mV during simulation			  */
+
+		n = numarg()
+		if (n>0) where  = $1 else where = 1  /* 0 soma; 1 all; 3 only terminations */
+		if (n>1) simMode = $2
+		if (n>2) dx 	= $3 else dx = 0.005 /* accuracy */
+		if (n>3) hi 	= $4 else hi = 1200      /* max */
+		if (n>4) lo 	= $5 else lo = 0	/* min */
+
+		/* stimulus threshold (if necessary) */
+
+		if (simMode!=1) {
+		active_set(0)                    /* g_na = 0 */
+		st_intensity = threshold(0,2,0.001) /* find stimulus threshold node */
+		print "stimulus threshold ", st_amp, "nA\t(nodal AP within 10 ms; g_na = 0)" 
+		st_set(st_intensity)		/* set amplitude */
+				}
+
+
+		/* g_na threshold for the different conditions */
+
+		value = threshold(1,where,dx,hi,lo)   /* calculate the threshold */
+
+		if (where==1&&simMode==0) { 	nathreshold        = value
+						print "nathreshold = ", nathreshold}
+		if (where==1&&simMode==1) { 	nathresholdvclamp  = value
+						print "nathresholdvclamp = ",nathresholdvclamp}
+		if (where==3&&simMode==0) { 	nathreshold2       = value
+						print "nathreshold2 = ", nathreshold2}
+		if (where==3&&simMode==1) { 	nathresholdvclamp2 = value
+						print "nathresholdvclamp2 = ",nathresholdvclamp2}
+
+
+		if (where==0&&simMode==0) { 	nathreshold2       = value
+						print "nathreshold = ", nathreshold}
+		if (where==0&&simMode==1) { 	nathresholdvclamp = value
+						print "nathresholdvclamp = ",nathresholdvclamp}
+
+		active_set() // set all the conductances back to standard
+		}
+
+/*****************************************************************/
+
+func threshold() 	{ local n,what,lo,hi,dx,where
+		/* find the na channel density threshold at which the
+		   distal dendrite is depolarized > 0 mV 
+		   search interval [$1 .. $2] */
+		/* does stimulus *and* g_na thresholds */
+
+		n = numarg()
+		if (n>0) type	= $1 else type  = 1     /* threshold: 0=stim, 1=g_na */
+		if (n>1) where	= $2 else where = 1     /* where: 0 soma, 1 all, 2 node */ 
+		if (n>2) dx 	= $3 else dx 	= 0.005 /* accuracy */
+		if (n>3) hi 	= $4 else if (type==1) hi = 300  else hi = 2  /* max */
+		if (n>4) lo 	= $5 else lo 	= 0	   /* min */
+
+
+		/*** help */
+
+		if (type==0)  sprint(str1,"stimulus threshold")
+		if (type==1)  sprint(str1,"g_na threshold")
+		if (where==0) sprint(str1,"%s at soma",str1) 
+		if (where==1) sprint(str1,"%s at all sections",str1) 
+		if (where==2) sprint(str1,"%s at node",str1) 
+		if (where==3) sprint(str1,"%s at terminations",str1) 
+	       		      sprint(str1,"%s [%0.0f-%0.0f]",str1,lo,hi)
+		if (type==0)  sprint(str1,"%s nA; accuracy %g",str1,dx)
+		if (type==1)  sprint(str1,"%s pS/um2; accuracy %g",str1,dx)
+		print str1
+
+		if (type==1)  sim_set(threshold_dur) else sim_set(10)
+
+	while (abs(lo-hi)>dx) {if(thresh((lo+hi)/2,where)) hi=(lo+hi)/2 else lo=(lo+hi)/2}
+
+		sim_set()
+		return hi
+		      }
+
+/*****************************************************************/
+
+
+func thresh() { local where
+		/* set na channel density or stimulus intensity ($1), then run simulation,   
+		   if all sections are depolarized > 0 mV return 1 else 0 */ 	
+		ok=1
+
+		if (type==1) { /* nathresh */
+				g_na	= $1
+				active_set(g_na)}
+
+		if (type==0) { /* stthresh */
+				st_amp	= $1
+				st_set(st_amp) }
+
+		where 	= $2
+
+		sim()
+
+ if (where==0) if(Soma.sec.vpeak_pk(0.5)<waveform.max-0.01) return 0 
+ if (where==1) forsec all for(x) if (vpeak_pk(x) < 0)              return 0   
+ if (where==2) if (node.vpeak_pk < 10)                    return 0
+ if (where==3) forsec terminations if(vpeak_pk(1) < 0)  	   return 0
+ if (where==4) forsec all for(x) if(vpeak_pk(x)<waveform.max-0.01)  return 0   
+ if (where==5) forsec terminations if (vpeak_pk(1)<waveform.max-0.01)  return 0   
+		return 1 	
+
+	      }
+
+
+
+
+
+
+
+/*****************************************************************/
+/* AP decay - other measure than thresholds                      */
+/*****************************************************************/
+
+proc APdecay() {local g,min,max,areavar,y,Max,Min,n,APdst,apo200,toggle,active,AP
+
+	/* calculates distance of AP half-decay & AP rel. amplitude at 200 um */
+	/* APhalf_pass,  AP200_pass */
+	/* if numarg() == 1 then active case */
+
+	if (electrotonicL) { L_switch(0) toggle=1 } else toggle = 0
+
+	n = numarg()
+	if (n>0) simMode=$1 else simMode=1
+	sim()         // run the simulation
+
+
+	/* APhalf */
+	APdst = 9999
+	origin.sec  AP = vpeak_pk(originx) - vonset_pk(originx)
+
+	forsec all for(x){
+if(vpeak_pk(x)-vonset_pk(x)<AP/2 && fdistance(x)<APdst) {APdst=fdistance(x)}}
+
+
+	if (simMode==3) APhalf_pass=APdst   else APhalf=APdst 
+	if (simMode==3)	fprint("passive ") else fprint("active  ")
+	fprint("AP halfdecay distance %5.0f\t",APdst)
+
+	/* AP200 */
+	AP200v = new Vector()
+	forsec all {	g = (maxdist()-200)/fL()  // 0 < g < 1 // -> section is within
+			if(g>=0&&g<=1) { AP200v.append(vpeak_pk(g) - vonset_pk(g))  }}
+
+	apo200 = mean(AP200v)/AP
+
+	if (simMode==3) AP200_pass=apo200  else  AP200=apo200
+	fprint("normalised AP200 %5.3f\n",apo200)
+
+	if (toggle) L_switch(1)
+	if (simMode==3) simMode =1
+		}
+
+
+/*****************************************************************/
+
+
+proc APdecay_sensitivity() { local i, mult, n, mode
+		
+		n = numarg()
+		if (n>0) simMode = $1 else simMode = 1
+		if (simMode==1)  remove_axon()
+
+		mult = 1.4
+
+		for i = 0,2 sens[i] = new Vector()
+		sens[0].indgen(0,nathresholdvclamp*mult,nathresholdvclamp/11)
+		for i = 0,sens[0].size()-1 { 
+						active_set(sens[0].x[i]) 
+						APdecay()   
+					  	sens[1].append(APhalf)
+					  	sens[2].append(AP200)
+					}
+		sigmoidal_calc()
+		active_set()
+			}
+
+
+
+
+
+
+func sigmoidal() { /* sigmoidal fit for AP200 titration */
+
+		  ref 	= sens[0].c
+		  shalf  = $&2[0]
+		  steep = $&2[1]
+		  range = $&2[2]
+		  basis = $&2[3] 
+		  ref.sub(shalf).mul(-1).div(steep)
+		  if (ref.max > 709) return 1000
+		   ref.apply("exp").add(1).div(range).apply("flip")
+		   ref.add(basis)
+		   return ref.meansqerr(sens[2])
+		}
+
+
+
+proc sigmoidal_calc() { /* sigmoidal fits for AP200 */
+
+			n = numarg()
+
+			param[0] = 15
+			param[1] = 1
+			param[2] = 0.5
+			param[3] = sens[2].x[0]
+
+			attr_praxis(1e-6,4,0)
+			fit_praxis(4,"sigmoidal",&param[0])
+
+			if (n>=1) fig(sens[0],sens[2])
+			if (n>=1) fig(sens[0],ref,0,1,2)
+
+			print "half ",shalf,"\tsteep ",steep , "\n"
+
+			AP200_half  = shalf
+			AP200_steep = steep
+			AP200_basis = basis
+			AP200_range = range
+			}
+
+
+proc scrappy() {
+		ActiveModel = act0
+		cell_name($s1)
+		number = new Vector()
+
+		readveca("nathreshold")
+		for i=0,2 sens[i].resize(15)
+		sigmoidal_calc()
+		ref4 = ref.c
+		fig(sens[0],sens[2],1,0,1)
+		fig(sens[0],ref4,1,1,2)
+		figlab(cellname,0.3,0.9)
+		}

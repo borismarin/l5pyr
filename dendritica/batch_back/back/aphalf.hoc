@@ -1,0 +1,215 @@
+/* Relating dendritic geometry and signal propagation   */
+/* forward propagation: dendritic voltage clamp command */
+/* minimal and maximal half-decay distance, AP200,      */
+/* and AP at soma from anywhere in the cell             */
+/* command: act0 p21 dendrititc spike waveform          */
+/* aphalf.hoc Version 1.0                               */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+/* initial parameters */
+t = 0                  /* simulation starts at t = 0 ms */
+dt = 0.025             /* time step, ms */
+simulationstop = 1600  /* simulation ends at t = 40 ms */
+
+objectvar waveformFile, waveformVector, vcla, pathToSoma
+objectvar mindistsection, maxdistsection, minap200section, maxap200section
+objectvar minapsomasection, maxapsomasection
+
+/* active model: act0 without axon (using Zach's nature .mod files) */
+celsius = 37           /* nominal temperature of the model, degC */
+Vrest = -70.494513     /* resting potential in mV */
+Vrevpas = -70          /* reversal potential of passive conductances */
+axialresist = 150      /* axial resistivity in ohm*cm */
+membraneresist = 12000 /* membrane resistivity in ohm*cm^2 */
+membranecap = 1        /* membrane capacity in uF/cm^2 */
+gna = 35               /* Na+ channel conductance density, pS/micron^2 */
+gkv = 30               /* K+ channel conductance density, pS/micron^2 */
+
+/* clean up Duke-Southampton and Smetters morphologies */
+forsec "axon" disconnect()
+forsec "axon" delete_section()
+forsec "hill" disconnect()
+forsec "hill" delete_section()
+forsec "iseg" disconnect()
+forsec "iseg" delete_section()
+
+forall if (L/nseg > 7) nseg = int(L/7) + 1 /* ensure that segment length <= 7 micron */
+
+/* membrane properties are defined here */
+forsec "dend" {insert pas g_pas=spinescale/membraneresist e_pas=Vrevpas}
+forsec "dend" {Ra=axialresist cm=spinescale*membranecap}
+forsec "dend" {insert na gbar_na=spinescale*gna}
+forsec "dend" {insert kv gbar_kv=spinescale*gkv}
+/* necessary for l56b.hoc and l60a.hoc  */
+forsec "undefined" {insert pas g_pas=spinescale/membraneresist e_pas=Vrevpas}
+forsec "undefined" {Ra=axialresist cm=spinescale*membranecap}
+forsec "undefined" {insert na gbar_na=spinescale*gna}
+forsec "undefined" {insert kv gbar_kv=spinescale*gkv}
+
+forsec "soma" {insert pas g_pas=1/membraneresist e_pas=Vrevpas}
+forsec "soma" {Ra=axialresist cm=membranecap}
+forsec "soma" {insert na gbar_na=gna}
+forsec "soma" {insert kv gbar_kv=gkv}
+
+forall insert pk
+forall {ek=-90 ena=60 vshift_na=-5}
+
+/* prepare voltage clamp command -- from the file dendspike_p21 */
+/* make sure this file was generated using the act0 model with  */
+/* sim_dur = simulationstop*dt                                  */
+
+waveformFile = new File()
+waveformVector = new Vector()
+waveformFile.ropen("dendspike_p21")
+waveformVector.vread(waveformFile)
+
+/* set up variables for minimum and maximum half-decay distance */
+/* and AP200                                                    */
+Soma.sec distance(0, 0.5) /* origin at the center of the soma   */
+mindist = 1e20
+maxdist = 0
+meandist = 0
+ndist = 0
+minap200 = 1e20
+maxap200 = 0
+meanap200 = 0
+nap200 = 0
+minapsoma = 1e20
+maxapsoma = 0
+meanapsoma = 0
+napsoma = 0
+
+/* find maximum half-decay distance: loop through all 3d points */
+/* To Do: only one simulation per segment                       */
+forall {
+	steps3d = n3d()
+	for (stepCount = 1; stepCount < steps3d; stepCount += 1) {
+
+		vcla = new SEClamp(arc3d(stepCount - 1)/L) /* cf. Michael Hines' comments in svclmp.mod */
+		vcla.rs = 0.001 /* megaohm */
+		vcla.dur1 = simulationstop*dt+1
+		vcla.dur2 = 1
+		vcla.dur3 = 1
+		vcla.amp1 = Vrest
+		vcla.amp2 = Vrest
+		vcla.amp3 = Vrest
+		waveformVector.play(&vcla.amp1)
+
+		/* initialization of simulation run */
+		t = 0 /* simulation starts at t = 0 ms */
+		count = 0
+		finitialize(Vrest)
+		fcurrent()
+
+		/* simulate forward propagation */
+		while (count < simulationstop) {
+			fadvance()
+			count += 1
+		}
+
+		waveformVector.play_remove()
+
+		/* find half-decay distance, AP200, APsoma of the forward-propagating AP */
+		clampamplitude = vpeak_pk(arc3d(stepCount - 1)/L) - Vrest
+		clampdist = distance(arc3d(stepCount - 1)/L)
+		pathToSoma = new SectionList()
+		pathToSoma.append()
+		count = 0
+		while (parent_section()) {
+			push_section(parent_section())
+			this_section() pathToSoma.append()
+			count += 1
+		}
+		for i=1,count pop_section()
+		Soma.sec pathToSoma.remove()
+
+		halfdecaydist = 1e20
+		forsec pathToSoma for(x) if ((clampdist - distance(x)) > 0 && (clampdist - distance(x)) < halfdecaydist && (vpeak_pk(x) - Vrest) < (clampamplitude/2)) halfdecaydist = clampdist - distance(x)
+		if (halfdecaydist < mindist) {
+			mindist = halfdecaydist
+			mindistsection = new SectionRef()
+			mindistlocation = arc3d(stepCount - 1)/L
+		}
+		if (halfdecaydist > maxdist && halfdecaydist < 1e20) {
+			maxdist = halfdecaydist
+			maxdistsection = new SectionRef()
+			maxdistlocation = arc3d(stepCount - 1)/L
+		}
+		if (halfdecaydist < 1e20) {
+			meandist += halfdecaydist
+			ndist += 1
+		}
+
+		ap200 = 1e20
+		proximity200 = 1e20
+		forsec pathToSoma for(x) if ((clampdist - distance(x)) >= 200 && (clampdist - distance(x)) < proximity200) {
+			proximity200 = clampdist - distance(x)
+			ap200 = (vpeak_pk(x) - Vrest)/clampamplitude
+		}
+		if (ap200 < minap200) {
+			minap200 = ap200
+			minap200section = new SectionRef()
+			minap200location = arc3d(stepCount - 1)/L
+		}
+		if (ap200 > maxap200 && ap200 < 1e20) {
+			maxap200 = ap200
+			maxap200section = new SectionRef()
+			maxap200location = arc3d(stepCount - 1)/L
+		}
+		if (ap200 < 1e20) {
+			meanap200 += ap200
+			nap200 += 1
+		}
+
+		Soma.sec apsoma = (vpeak_pk(0.5) - Vrest)/clampamplitude
+		if (apsoma < minapsoma) {
+			minapsoma = apsoma
+			minapsomasection = new SectionRef()
+			minapsomalocation = arc3d(stepCount - 1)/L
+		}
+		if (apsoma > maxapsoma) {
+			maxapsoma = apsoma
+			maxapsomasection = new SectionRef()
+			maxapsomalocation = arc3d(stepCount - 1)/L
+		}
+		meanapsoma += apsoma
+		napsoma += 1
+	}
+	sectionCount += 1
+}
+
+/* write results to file */
+sprint(cellvar, "%s/%s", datadir, celladdress)
+wopen(cellvar)
+fprint("halfdecay_min         = %g\n", mindist)
+mindistsection.sec fprint("halfdecay_minlocation = \"%s(%g)\"\n", secname(), mindistlocation)
+fprint("halfdecay_max         = %g\n", maxdist)
+maxdistsection.sec fprint("halfdecay_maxlocation = \"%s(%g)\"\n", secname(), maxdistlocation)
+fprint("halfdecay_mean        = %g\n", meandist/ndist)
+fprint("ap200_min             = %g\n", minap200)
+minap200section.sec fprint("ap200_minlocation     = \"%s(%g)\"\n", secname(), minap200location)
+fprint("ap200_max             = %g\n", maxap200)
+maxap200section.sec fprint("ap200_maxlocation     = \"%s(%g)\"\n", secname(), maxap200location)
+fprint("ap200_mean            = %g\n", meanap200/nap200)
+fprint("apsoma_min            = %g\n", minapsoma)
+minapsomasection.sec fprint("apsoma_minlocation    = \"%s(%g)\"\n", secname(), minapsomalocation)
+fprint("apsoma_max            = %g\n", maxapsoma)
+maxapsomasection.sec fprint("apsoma_maxlocation    = \"%s(%g)\"\n", secname(), maxapsomalocation)
+fprint("apsoma_mean           = %g\n", meanapsoma/napsoma)
+wopen()

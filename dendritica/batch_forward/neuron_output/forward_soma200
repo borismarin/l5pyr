@@ -1,0 +1,571 @@
+
+
+geometric correlations
+================
+
+Single correlation against nathresholdvclamp 3014  (act0)
+Forward propagation
+
+r  0.855  power     1.00  1011  dAdr_ratio
+r  0.847  power     1.00  1211  exp(dAdr_ratio)
+r  0.411  power     1.00  1111  ln(dAdr_ratio)
+r  0.400  power     1.00  1213  exp(d2area_max)
+
+
+Single correlation against nathresholdvclamp 3014  (act0)
+Forward propagation
+
+r  0.855  power     0.93  1011  dAdr_ratio
+r  0.855  power     0.06  1211  exp(dAdr_ratio)
+r  0.845  power    23.09  1111  ln(dAdr_ratio)
+r  0.602  power   244.27  1220  exp(diamratio_peak)
+r  0.431  power   150.70  1119  ln(branchdensityII)
+r  0.430  power     6.36  1019  branchdensityII
+r  0.428  power     7.32  1219  exp(branchdensityII)
+r  0.419  power     4.57  1213  exp(d2area_max)
+r  0.416  power     4.31  1013  d2area_max
+
+
+
+
+functional correlations
+================
+
+Single correlation against nathresholdvclamp 3014  (act0)
+Forward propagation
+
+r  1.000  power     1.00  3014  nathresholdvclamp
+r  0.987  power     1.00  3214  exp(nathresholdvclamp)
+r -0.766  power     1.00  3113  ln(APhalf_pass)
+r -0.746  power     1.00  3011  AP200_pass
+r -0.742  power     1.00  3112  ln(APhalf)
+r  0.729  power     1.00  3040  cRfwd_min
+r -0.724  power     1.00  3240  exp(cRfwd_min)
+r -0.695  power     1.00  3211  exp(AP200_pass)
+r -0.639  power     1.00  3010  AP200
+r -0.610  power     1.00  3111  ln(AP200_pass)
+r -0.601  power     1.00  3210  exp(AP200)
+r -0.582  power     1.00  3110  ln(AP200)
+r -0.579  power     1.00  3013  APhalf_pass
+r -0.565  power     1.00  3242  exp(caZfwd_min)
+r -0.559  power     1.00  3238  exp(cZfwd_min)
+r  0.547  power     1.00  3042  caZfwd_min
+r  0.543  power     1.00  3038  cZfwd_min
+r  0.541  power     1.00  3114  ln(nathresholdvclamp)
+r -0.540  power     1.00  3213  exp(APhalf_pass)
+r  0.510  power     1.00  3142  ln(caZfwd_min)
+r -0.446  power     1.00  3012  APhalf
+r -0.444  power     1.00  3212  exp(APhalf)
+r  0.411  power     1.00  3138  ln(cZfwd_min)
+
+
+Single correlation against nathresholdvclamp 3014  (act0)
+Forward propagation
+
+r  1.000  power     1.00  3014  nathresholdvclamp
+r  1.000  power    -0.00  3214  exp(nathresholdvclamp)
+r -0.799  power     0.17  3011  AP200_pass
+r -0.779  power     1.59  3113  ln(APhalf_pass)
+r -0.748  power    -0.49  3010  AP200
+r -0.743  power    -1.43  3211  exp(AP200_pass)
+r -0.742  power     1.05  3112  ln(APhalf)
+r  0.740  power     3.30  3114  ln(nathresholdvclamp)
+r  0.738  power     0.63  3040  cRfwd_min
+r -0.725  power     0.57  3240  exp(cRfwd_min)
+r -0.704  power     4.08  3110  ln(AP200)
+r -0.697  power     3.08  3111  ln(AP200_pass)
+r -0.652  power    -1.59  3013  APhalf_pass
+r -0.637  power    -1.41  3210  exp(AP200)
+r  0.619  power     2.49  3142  ln(caZfwd_min)
+r -0.578  power    -1.60  3213  exp(APhalf_pass)
+r  0.578  power     2.69  3138  ln(cZfwd_min)
+r -0.566  power     1.37  3242  exp(caZfwd_min)
+r -0.560  power     1.28  3238  exp(cZfwd_min)
+r  0.557  power     0.72  3042  caZfwd_min
+r  0.549  power     0.77  3038  cZfwd_min
+r -0.517  power    -1.58  3012  APhalf
+r -0.446  power    -1.44  3212  exp(APhalf)
+
+
+
+
+geometric correlations
+================
+
+Single correlation against AP200 3010  (act0)
+Forward propagation
+
+r -0.617  power     1.00  1111  ln(dAdr_ratio)
+r -0.525  power     1.00  1011  dAdr_ratio
+r -0.451  power     1.00  1211  exp(dAdr_ratio)
+r  0.433  power     1.00  1010  taper_mean
+r  0.423  power     1.00  1110  ln(taper_mean)
+
+
+Single correlation against AP200 3010  (act0)
+Forward propagation
+
+r -0.749  power     3.14  1111  ln(dAdr_ratio)
+r -0.736  power    -0.50  1011  dAdr_ratio
+r -0.521  power    -1.55  1211  exp(dAdr_ratio)
+r  0.445  power     0.61  1010  taper_mean
+r  0.428  power     1.26  1110  ln(taper_mean)
+r -0.417  power     2.61  1105  ln(rallratio_peak)
+
+
+
+
+functional correlations
+================
+
+Single correlation against AP200 3010  (act0)
+Forward propagation
+
+r  1.000  power     1.00  3010  AP200
+r  0.993  power     1.00  3210  exp(AP200)
+r  0.893  power     1.00  3211  exp(AP200_pass)
+r  0.889  power     1.00  3011  AP200_pass
+r  0.834  power     1.00  3012  APhalf
+r  0.832  power     1.00  3212  exp(APhalf)
+r -0.735  power     1.00  3114  ln(nathresholdvclamp)
+r -0.639  power     1.00  3014  nathresholdvclamp
+r  0.638  power     1.00  3213  exp(APhalf_pass)
+r  0.629  power     1.00  3013  APhalf_pass
+r  0.621  power     1.00  3112  ln(APhalf)
+r  0.600  power     1.00  3240  exp(cRfwd_min)
+r -0.565  power     1.00  3140  ln(cRfwd_min)
+r -0.558  power     1.00  3214  exp(nathresholdvclamp)
+r -0.548  power     1.00  3040  cRfwd_min
+r  0.498  power     1.00  3242  exp(caZfwd_min)
+r  0.492  power     1.00  3110  ln(AP200)
+r  0.491  power     1.00  3238  exp(cZfwd_min)
+r -0.468  power     1.00  3135  ln(aRfwd_max)
+r -0.457  power     1.00  3142  ln(caZfwd_min)
+r -0.444  power     1.00  3042  caZfwd_min
+r -0.440  power     1.00  3038  cZfwd_min
+r -0.429  power     1.00  3136  ln(daRfwd_max)
+r -0.419  power     1.00  3034  aRfwd_min
+r  0.407  power     1.00  3111  ln(AP200_pass)
+
+
+Single correlation against AP200 3010  (act0)
+Forward propagation
+
+r  1.000  power     1.00  3010  AP200
+r  1.000  power    -0.06  3210  exp(AP200)
+r  0.897  power     1.37  3011  AP200_pass
+r  0.894  power     0.65  3211  exp(AP200_pass)
+r  0.879  power    -0.46  3012  APhalf
+r -0.860  power     2.60  3114  ln(nathresholdvclamp)
+r  0.834  power    -1.50  3212  exp(APhalf)
+r -0.821  power    -1.56  3014  nathresholdvclamp
+r  0.813  power     2.71  3112  ln(APhalf)
+r -0.720  power     0.06  3040  cRfwd_min
+r  0.680  power     4.02  3110  ln(AP200)
+r  0.656  power     3.95  3240  exp(cRfwd_min)
+r  0.640  power     1.67  3013  APhalf_pass
+r  0.638  power     1.08  3213  exp(APhalf_pass)
+r -0.634  power    -1.40  3214  exp(nathresholdvclamp)
+r -0.582  power     0.69  3140  ln(cRfwd_min)
+r  0.559  power     3.92  3111  ln(AP200_pass)
+r -0.556  power     0.03  3042  caZfwd_min
+r  0.552  power     4.00  3242  exp(caZfwd_min)
+r  0.543  power     4.09  3238  exp(cZfwd_min)
+r -0.540  power     2.54  3135  ln(aRfwd_max)
+r -0.507  power     0.47  3038  cZfwd_min
+r -0.481  power     2.47  3136  ln(daRfwd_max)
+r -0.460  power     1.14  3142  ln(caZfwd_min)
+r  0.460  power     3.75  3113  ln(APhalf_pass)
+r -0.446  power    -0.54  3037  daRfwd_min
+r -0.433  power     0.53  3034  aRfwd_min
+r -0.418  power    -1.46  3234  exp(aRfwd_min)
+r -0.407  power     1.72  3138  ln(cZfwd_min)
+
+
+
+
+
+equivalent cable
+=====================
+
+Single correlation against nathresholdvclamp 3014  (act0)
+Forward propagation
+
+r  1.000  power     1.00  3014  nathresholdvclamp
+r  0.987  power     1.00  3214  exp(nathresholdvclamp)
+r  0.729  power     1.00  3040  cRfwd_min
+r -0.724  power     1.00  3240  exp(cRfwd_min)
+r -0.639  power     1.00  3010  AP200
+r -0.601  power     1.00  3210  exp(AP200)
+r -0.582  power     1.00  3110  ln(AP200)
+r -0.565  power     1.00  3242  exp(caZfwd_min)
+r -0.559  power     1.00  3238  exp(cZfwd_min)
+r  0.547  power     1.00  3042  caZfwd_min
+r  0.543  power     1.00  3038  cZfwd_min
+r  0.541  power     1.00  3114  ln(nathresholdvclamp)
+r  0.510  power     1.00  3142  ln(caZfwd_min)
+r  0.498  power     1.00  3129  ln(dRfwd_min)
+r  0.498  power     1.00  3029  dRfwd_min
+r  0.489  power     1.00  3025  dZfwd_min
+r  0.483  power     1.00  3033  daZfwd_min
+r -0.471  power     1.00  3229  exp(dRfwd_min)
+r  0.465  power     1.00  3133  ln(daZfwd_min)
+r -0.461  power     1.00  3225  exp(dZfwd_min)
+r -0.453  power     1.00  3233  exp(daZfwd_min)
+r  0.438  power     1.00  3125  ln(dZfwd_min)
+r  0.411  power     1.00  3138  ln(cZfwd_min)
+
+
+Single correlation against nathresholdvclamp 3014  (act0)
+Forward propagation
+
+r  1.000  power     1.00  3014  nathresholdvclamp
+r  1.000  power    -0.00  3214  exp(nathresholdvclamp)
+r -0.746  power    -0.46  3010  AP200
+r  0.740  power     3.28  3114  ln(nathresholdvclamp)
+r  0.738  power     0.66  3040  cRfwd_min
+r -0.725  power     0.57  3240  exp(cRfwd_min)
+r -0.702  power     4.01  3110  ln(AP200)
+r -0.638  power    -1.52  3210  exp(AP200)
+r  0.619  power     2.50  3142  ln(caZfwd_min)
+r  0.576  power     2.61  3138  ln(cZfwd_min)
+r  0.575  power     2.47  3129  ln(dRfwd_min)
+r -0.566  power     1.38  3242  exp(caZfwd_min)
+r  0.566  power     2.55  3133  ln(daZfwd_min)
+r -0.560  power     1.27  3238  exp(cZfwd_min)
+r  0.557  power     0.71  3042  caZfwd_min
+r  0.549  power     0.76  3038  cZfwd_min
+r  0.547  power     2.47  3125  ln(dZfwd_min)
+r  0.518  power     2.10  3029  dRfwd_min
+r  0.515  power     2.07  3025  dZfwd_min
+r  0.513  power     2.13  3033  daZfwd_min
+r -0.495  power    -1.44  3229  exp(dRfwd_min)
+r -0.488  power    -1.45  3225  exp(dZfwd_min)
+r -0.481  power    -1.41  3233  exp(daZfwd_min)
+r  0.410  power     0.24  3006  Rmismatch_mean
+
+
+Single correlation against AP200 3010  (act0)
+Forward propagation
+
+r  1.000  power     1.00  3010  AP200
+r  0.993  power     1.00  3210  exp(AP200)
+r -0.735  power     1.00  3114  ln(nathresholdvclamp)
+r -0.639  power     1.00  3014  nathresholdvclamp
+r  0.600  power     1.00  3240  exp(cRfwd_min)
+r -0.565  power     1.00  3140  ln(cRfwd_min)
+r -0.558  power     1.00  3214  exp(nathresholdvclamp)
+r -0.548  power     1.00  3040  cRfwd_min
+r  0.498  power     1.00  3242  exp(caZfwd_min)
+r  0.492  power     1.00  3110  ln(AP200)
+r  0.491  power     1.00  3238  exp(cZfwd_min)
+r -0.457  power     1.00  3142  ln(caZfwd_min)
+r -0.444  power     1.00  3042  caZfwd_min
+r -0.440  power     1.00  3038  cZfwd_min
+r -0.402  power     1.00  3135  ln(aRfwd_max)
+
+
+Single correlation against AP200 3010  (act0)
+Forward propagation
+
+r  1.000  power     1.00  3010  AP200
+r  1.000  power    -0.05  3210  exp(AP200)
+r -0.859  power     2.55  3114  ln(nathresholdvclamp)
+r -0.817  power    -1.43  3014  nathresholdvclamp
+r -0.720  power     0.05  3040  cRfwd_min
+r  0.680  power     3.99  3110  ln(AP200)
+r  0.657  power     4.06  3240  exp(cRfwd_min)
+r -0.636  power    -1.59  3214  exp(nathresholdvclamp)
+r -0.582  power     0.71  3140  ln(cRfwd_min)
+r -0.556  power     0.03  3042  caZfwd_min
+r  0.551  power     3.96  3242  exp(caZfwd_min)
+r  0.542  power     3.93  3238  exp(cZfwd_min)
+r -0.507  power     0.47  3038  cZfwd_min
+r -0.498  power     3.06  3135  ln(aRfwd_max)
+r -0.484  power    -1.49  3029  dRfwd_min
+r -0.476  power    -0.48  3035  aRfwd_max
+r -0.460  power     1.14  3142  ln(caZfwd_min)
+r -0.431  power     2.87  3136  ln(daRfwd_max)
+r -0.430  power     0.29  3006  Rmismatch_mean
+r -0.407  power     1.73  3138  ln(cZfwd_min)
+r -0.402  power     0.39  3129  ln(dRfwd_min)
+
+
+
+
+
+double correlations
+=====================
+
+Double correlation against nathresholdvclamp 3014   (act0)
+Forward propagation
+
+0.89	1102 1011	ln(area_max) ^1.1	dAdr_ratio ^0.8	
+0.88	1109 1011	ln(sections_mean) ^1.2	dAdr_ratio ^0.9	
+0.87	1011 1014	dAdr_ratio ^1.1	d2area_maxdist ^1.5	
+0.87	1011 1214	dAdr_ratio ^1.0	exp(d2area_maxdist) ^1.9	
+0.87	1209 1011	exp(sections_mean) ^0.7	dAdr_ratio ^1.0	
+0.87	1011 1112	dAdr_ratio ^0.9	ln(dAdr_relmax) ^0.9	
+0.87	1011 1220	dAdr_ratio ^0.7	exp(diamratio_peak) ^0.8	
+0.87	1205 1011	exp(rallratio_peak) ^0.6	dAdr_ratio ^0.7	
+0.87	1202 1011	exp(area_max) ^0.4	dAdr_ratio ^0.8	
+0.87	1011 1020	dAdr_ratio ^0.7	diamratio_peak ^0.7	
+0.87	1211 1214	exp(dAdr_ratio) ^1.1	exp(d2area_maxdist) ^0.6	
+0.87	1001 1011	darea_maxdist ^0.7	dAdr_ratio ^1.0	
+0.87	1207 1011	exp(sections_max) ^0.5	dAdr_ratio ^0.9	
+0.87	1011 1114	dAdr_ratio ^1.1	ln(d2area_maxdist) ^4.4	
+0.87	1011 1021	dAdr_ratio ^0.8	diamratio_mean ^0.5	
+0.87	1201 1011	exp(darea_maxdist) ^1.1	dAdr_ratio ^1.0	
+0.87	1011 1113	dAdr_ratio ^0.8	ln(d2area_max) ^1.7	
+0.87	1108 1011	ln(sections_maxdist) ^0.9	dAdr_ratio ^1.0	
+0.87	1005 1011	rallratio_peak ^0.5	dAdr_ratio ^0.9	
+0.87	1011 1221	dAdr_ratio ^0.8	exp(diamratio_mean) ^0.6	
+0.87	1011 1121	dAdr_ratio ^0.9	ln(diamratio_mean) ^2.0	
+0.87	1011 2211	dAdr_ratio ^0.7	exp(adiam_mean) ^0.4	
+0.86	1101 1011	ln(darea_maxdist) ^2.6	dAdr_ratio ^1.0	
+0.86	1210 1011	exp(taper_mean) ^0.6	dAdr_ratio ^0.9	
+0.86	1011 1120	dAdr_ratio ^0.8	ln(diamratio_peak) ^1.3	
+0.86	1011 1224	dAdr_ratio ^0.8	exp(diamratio_noend_peak) ^0.5	
+0.86	1011 1217	dAdr_ratio ^0.9	exp(diam_mean) ^0.3	
+0.86	1011 2111	dAdr_ratio ^1.0	ln(adiam_mean) ^0.3	
+0.86	1105 1011	ln(rallratio_peak) ^1.6	dAdr_ratio ^0.9	
+0.86	1100 1011	ln(darea_max) ^0.8	dAdr_ratio ^0.9	
+0.86	1008 1011	sections_maxdist ^0.3	dAdr_ratio ^1.1	
+0.86	1011 1227	dAdr_ratio ^0.8	exp(rallratio_noend_peak) ^0.3	
+0.86	1011 1211	dAdr_ratio ^0.2	exp(dAdr_ratio) ^0.7	
+0.86	1211 1111	exp(dAdr_ratio) ^1.3	ln(dAdr_ratio) ^4.0	
+0.86	1203 1011	exp(branchpoints_num) ^0.2	dAdr_ratio ^0.9	
+0.86	1111 1211	ln(dAdr_ratio) ^3.5	exp(dAdr_ratio) ^1.3	
+0.86	1208 1011	exp(sections_maxdist) ^0.5	dAdr_ratio ^1.0	
+0.86	1107 1011	ln(sections_max) ^1.1	dAdr_ratio ^1.0	
+0.86	1011 1228	dAdr_ratio ^1.0	exp(rallratio_noend_mean) ^-0.3	
+0.86	1206 1011	exp(distance_max) ^0.3	dAdr_ratio ^0.9	
+0.86	1011 1215	dAdr_ratio ^1.1	exp(d2area_maxAr_ratio) ^0.3	
+0.86	1211 1011	exp(dAdr_ratio) ^0.5	dAdr_ratio ^0.7	
+0.86	1111 1011	ln(dAdr_ratio) ^0.7	dAdr_ratio ^0.9	
+0.86	1011 1111	dAdr_ratio ^0.9	ln(dAdr_ratio) ^1.0	
+0.85	1211 1211	exp(dAdr_ratio) ^-0.6	exp(dAdr_ratio) ^0.6	
+0.85	1211 1114	exp(dAdr_ratio) ^1.7	ln(d2area_maxdist) ^3.4	
+0.85	1211 1221	exp(dAdr_ratio) ^1.1	exp(diamratio_mean) ^0.2	
+0.85	1103 1011	ln(branchpoints_num) ^0.8	dAdr_ratio ^1.1	
+0.85	1011 1127	dAdr_ratio ^1.1	ln(rallratio_noend_peak) ^4.4	
+0.85	1011 1124	dAdr_ratio ^1.1	ln(diamratio_noend_peak) ^4.4	
+0.84	1011 1025	dAdr_ratio ^1.1	diamratio_noend_mean ^0.2	
+0.84	1211 1215	exp(dAdr_ratio) ^1.8	exp(d2area_maxAr_ratio) ^0.3	
+0.84	1211 1113	exp(dAdr_ratio) ^1.6	ln(d2area_max) ^1.6	
+0.84	1211 1120	exp(dAdr_ratio) ^1.5	ln(diamratio_peak) ^0.3	
+0.83	1211 1121	exp(dAdr_ratio) ^1.7	ln(diamratio_mean) ^0.7	
+0.83	1105 1211	ln(rallratio_peak) ^1.4	exp(dAdr_ratio) ^1.8	
+0.81	1211 1025	exp(dAdr_ratio) ^2.1	diamratio_noend_mean ^0.4	
+0.81	1103 1211	ln(branchpoints_num) ^1.1	exp(dAdr_ratio) ^1.9	
+0.80	1211 1125	exp(dAdr_ratio) ^2.2	ln(diamratio_noend_mean) ^3.9	
+0.80	1211 1124	exp(dAdr_ratio) ^2.0	ln(diamratio_noend_peak) ^3.2	
+0.80	1211 1128	exp(dAdr_ratio) ^2.0	ln(rallratio_noend_mean) ^3.4	
+0.80	1211 1127	exp(dAdr_ratio) ^2.0	ln(rallratio_noend_peak) ^3.3	
+
+
+
+Double correlation against nathresholdvclamp 3014   (act0)
+Forward propagation
+
+0.88	1102 1011	ln(area_max) ^1.0	dAdr_ratio ^1.0	
+0.88	1109 1011	ln(sections_mean) ^1.0	dAdr_ratio ^1.0	
+0.87	1011 1014	dAdr_ratio ^1.0	d2area_maxdist ^1.0	
+0.87	1011 1214	dAdr_ratio ^1.0	exp(d2area_maxdist) ^1.0	
+0.87	1011 1112	dAdr_ratio ^1.0	ln(dAdr_relmax) ^1.0	
+0.87	1209 1011	exp(sections_mean) ^1.0	dAdr_ratio ^1.0	
+0.87	1201 1011	exp(darea_maxdist) ^1.0	dAdr_ratio ^1.0	
+0.87	1108 1011	ln(sections_maxdist) ^1.0	dAdr_ratio ^1.0	
+0.86	1011 1121	dAdr_ratio ^1.0	ln(diamratio_mean) ^1.0	
+0.86	1011 1220	dAdr_ratio ^1.0	exp(diamratio_peak) ^1.0	
+0.86	1011 1113	dAdr_ratio ^1.0	ln(d2area_max) ^1.0	
+0.86	1011 1020	dAdr_ratio ^1.0	diamratio_peak ^1.0	
+0.86	1210 1011	exp(taper_mean) ^1.0	dAdr_ratio ^1.0	
+0.86	1011 1120	dAdr_ratio ^1.0	ln(diamratio_peak) ^1.0	
+0.86	1105 1011	ln(rallratio_peak) ^1.0	dAdr_ratio ^1.0	
+0.86	1100 1011	ln(darea_max) ^1.0	dAdr_ratio ^1.0	
+0.86	1001 1011	darea_maxdist ^1.0	dAdr_ratio ^1.0	
+0.86	1101 1011	ln(darea_maxdist) ^1.0	dAdr_ratio ^1.0	
+0.86	1011 1114	dAdr_ratio ^1.0	ln(d2area_maxdist) ^1.0	
+0.86	1011 1221	dAdr_ratio ^1.0	exp(diamratio_mean) ^1.0	
+0.86	1205 1011	exp(rallratio_peak) ^1.0	dAdr_ratio ^1.0	
+0.86	1211 1214	exp(dAdr_ratio) ^1.0	exp(d2area_maxdist) ^1.0	
+0.86	1107 1011	ln(sections_max) ^1.0	dAdr_ratio ^1.0	
+0.86	1011 1021	dAdr_ratio ^1.0	diamratio_mean ^1.0	
+0.86	1111 1011	ln(dAdr_ratio) ^1.0	dAdr_ratio ^1.0	
+0.86	1011 1111	dAdr_ratio ^1.0	ln(dAdr_ratio) ^1.0	
+0.85	1011 1224	dAdr_ratio ^1.0	exp(diamratio_noend_peak) ^1.0	
+0.85	1207 1011	exp(sections_max) ^1.0	dAdr_ratio ^1.0	
+0.85	1208 1011	exp(sections_maxdist) ^1.0	dAdr_ratio ^1.0	
+0.85	1011 2111	dAdr_ratio ^1.0	ln(adiam_mean) ^1.0	
+0.85	1104 1011	ln(rallratio_mean) ^1.0	dAdr_ratio ^1.0	
+0.85	1005 1011	rallratio_peak ^1.0	dAdr_ratio ^1.0	
+0.85	1011 1223	dAdr_ratio ^1.0	exp(branchdensityII_noend) ^-1.0	
+0.85	1011 1222	dAdr_ratio ^1.0	exp(branchdensity_noend) ^-1.0	
+0.85	1206 1011	exp(distance_max) ^1.0	dAdr_ratio ^1.0	
+0.85	1103 1011	ln(branchpoints_num) ^1.0	dAdr_ratio ^1.0	
+0.85	1011 1218	dAdr_ratio ^1.0	exp(branchdensity) ^-1.0	
+0.85	1011 1228	dAdr_ratio ^1.0	exp(rallratio_noend_mean) ^-1.0	
+0.85	1011 1227	dAdr_ratio ^1.0	exp(rallratio_noend_peak) ^1.0	
+0.84	1011 1216	dAdr_ratio ^1.0	exp(d2area_maxAr_percent) ^1.0	
+0.84	1204 1011	exp(rallratio_mean) ^-1.0	dAdr_ratio ^1.0	
+0.84	1011 1127	dAdr_ratio ^1.0	ln(rallratio_noend_peak) ^1.0	
+0.84	1011 1124	dAdr_ratio ^1.0	ln(diamratio_noend_peak) ^1.0	
+0.84	1011 1125	dAdr_ratio ^1.0	ln(diamratio_noend_mean) ^1.0	
+0.84	1011 1128	dAdr_ratio ^1.0	ln(rallratio_noend_mean) ^1.0	
+0.84	1011 1024	dAdr_ratio ^1.0	diamratio_noend_peak ^1.0	
+0.84	1011 1123	dAdr_ratio ^1.0	ln(branchdensityII_noend) ^1.0	
+0.83	1202 1011	exp(area_max) ^1.0	dAdr_ratio ^1.0	
+0.83	1011 1016	dAdr_ratio ^1.0	d2area_maxAr_percent ^1.0	
+0.83	1211 1011	exp(dAdr_ratio) ^1.0	dAdr_ratio ^1.0	
+0.83	1011 1211	dAdr_ratio ^1.0	exp(dAdr_ratio) ^1.0	
+0.83	1011 1225	dAdr_ratio ^1.0	exp(diamratio_noend_mean) ^-1.0	
+0.83	1211 1111	exp(dAdr_ratio) ^1.0	ln(dAdr_ratio) ^1.0	
+0.83	1111 1211	ln(dAdr_ratio) ^1.0	exp(dAdr_ratio) ^1.0	
+0.83	1011 1217	dAdr_ratio ^1.0	exp(diam_mean) ^1.0	
+0.83	1011 1126	dAdr_ratio ^1.0	ln(mean_stem_dendrite_diam) ^1.0	
+0.83	1011 1118	dAdr_ratio ^1.0	ln(branchdensity) ^1.0	
+0.83	1011 1116	dAdr_ratio ^1.0	ln(d2area_maxAr_percent) ^1.0	
+0.83	1011 2211	dAdr_ratio ^1.0	exp(adiam_mean) ^1.0	
+0.83	1011 1115	dAdr_ratio ^1.0	ln(d2area_maxAr_ratio) ^1.0	
+0.83	1211 1220	exp(dAdr_ratio) ^1.0	exp(diamratio_peak) ^1.0	
+0.83	1211 1014	exp(dAdr_ratio) ^1.0	d2area_maxdist ^1.0	
+0.82	1011 1117	dAdr_ratio ^1.0	ln(diam_mean) ^1.0	
+0.82	1211 1211	exp(dAdr_ratio) ^1.0	exp(dAdr_ratio) ^1.0	
+0.82	1011 1027	dAdr_ratio ^1.0	rallratio_noend_peak ^1.0	
+0.82	1011 1119	dAdr_ratio ^1.0	ln(branchdensityII) ^1.0	
+0.82	1004 1011	rallratio_mean ^-1.0	dAdr_ratio ^1.0	
+0.82	1011 1122	dAdr_ratio ^1.0	ln(branchdensity_noend) ^1.0	
+0.81	1011 1215	dAdr_ratio ^1.0	exp(d2area_maxAr_ratio) ^1.0	
+0.81	1011 1011	dAdr_ratio ^1.0	dAdr_ratio ^1.0	
+0.81	1211 1113	exp(dAdr_ratio) ^1.0	ln(d2area_max) ^1.0	
+0.81	1211 1020	exp(dAdr_ratio) ^1.0	diamratio_peak ^1.0	
+0.81	1211 1114	exp(dAdr_ratio) ^1.0	ln(d2area_maxdist) ^1.0	
+0.80	1211 1120	exp(dAdr_ratio) ^1.0	ln(diamratio_peak) ^1.0	
+0.80	1203 1011	exp(branchpoints_num) ^1.0	dAdr_ratio ^1.0	
+0.80	1011 1025	dAdr_ratio ^1.0	diamratio_noend_mean ^1.0	
+0.80	1011 1226	dAdr_ratio ^1.0	exp(mean_stem_dendrite_diam) ^1.0	
+0.80	1205 1211	exp(rallratio_peak) ^1.0	exp(dAdr_ratio) ^1.0	
+0.79	1211 1222	exp(dAdr_ratio) ^1.0	exp(branchdensity_noend) ^-1.0	
+0.79	1211 1223	exp(dAdr_ratio) ^1.0	exp(branchdensityII_noend) ^-1.0	
+0.79	1102 1211	ln(area_max) ^1.0	exp(dAdr_ratio) ^1.0	
+0.79	1211 1221	exp(dAdr_ratio) ^1.0	exp(diamratio_mean) ^1.0	
+0.79	1211 1121	exp(dAdr_ratio) ^1.0	ln(diamratio_mean) ^1.0	
+0.79	1011 1212	dAdr_ratio ^1.0	exp(dAdr_relmax) ^1.0	
+0.78	1008 1011	sections_maxdist ^-1.0	dAdr_ratio ^1.0	
+0.78	1109 1211	ln(sections_mean) ^1.0	exp(dAdr_ratio) ^1.0	
+
+
+
+Double correlation against AP200 3010   (act0)
+Forward propagation
+
+0.80	1011 1226	dAdr_ratio ^-0.5	exp(mean_stem_dendrite_diam) ^0.2	
+0.80	1011 1228	dAdr_ratio ^-0.7	exp(rallratio_noend_mean) ^0.3	
+0.80	1011 1026	dAdr_ratio ^-0.8	mean_stem_dendrite_diam ^0.3	
+0.80	1011 1224	dAdr_ratio ^-0.8	exp(diamratio_noend_peak) ^0.2	
+-0.80	1111 2211	ln(dAdr_ratio) ^3.0	exp(adiam_mean) ^0.2	
+0.80	1011 1217	dAdr_ratio ^-0.7	exp(diam_mean) ^-0.8	
+0.80	1011 1011	dAdr_ratio ^-1.2	dAdr_ratio ^0.5	
+-0.79	1102 1111	ln(area_max) ^0.3	ln(dAdr_ratio) ^3.3	
+-0.79	1111 1226	ln(dAdr_ratio) ^3.5	exp(mean_stem_dendrite_diam) ^-0.2	
+-0.78	1111 1214	ln(dAdr_ratio) ^3.5	exp(d2area_maxdist) ^0.5	
+-0.78	1111 1111	ln(dAdr_ratio) ^2.4	ln(dAdr_ratio) ^1.8	
+-0.78	1111 1113	ln(dAdr_ratio) ^4.4	ln(d2area_max) ^0.3	
+-0.78	1111 1211	ln(dAdr_ratio) ^4.0	exp(dAdr_ratio) ^-0.3	
+-0.78	1111 1016	ln(dAdr_ratio) ^3.6	d2area_maxAr_percent ^0.3	
+-0.78	1111 1216	ln(dAdr_ratio) ^3.6	exp(d2area_maxAr_percent) ^0.3	
+-0.78	1111 1218	ln(dAdr_ratio) ^3.6	exp(branchdensity) ^0.2	
+-0.78	1111 1114	ln(dAdr_ratio) ^3.9	ln(d2area_maxdist) ^-0.3	
+-0.78	1111 1014	ln(dAdr_ratio) ^3.6	d2area_maxdist ^0.4	
+0.78	1011 1016	dAdr_ratio ^-0.9	d2area_maxAr_percent ^0.3	
+-0.78	1208 1111	exp(sections_maxdist) ^-0.3	ln(dAdr_ratio) ^3.2	
+-0.77	1211 1011	exp(dAdr_ratio) ^-0.8	dAdr_ratio ^0.4	
+-0.77	1209 1111	exp(sections_mean) ^0.2	ln(dAdr_ratio) ^3.1	
+0.76	1011 1216	dAdr_ratio ^-0.8	exp(d2area_maxAr_percent) ^0.8	
+-0.75	1203 1111	exp(branchpoints_num) ^0.3	ln(dAdr_ratio) ^2.9	
+-0.74	1206 1111	exp(distance_max) ^-0.5	ln(dAdr_ratio) ^2.7	
+-0.74	1200 1111	exp(darea_max) ^0.3	ln(dAdr_ratio) ^2.9	
+-0.74	1005 1111	rallratio_peak ^0.3	ln(dAdr_ratio) ^2.6	
+-0.74	1210 1111	exp(taper_mean) ^0.3	ln(dAdr_ratio) ^2.2	
+
+
+
+Double correlation against AP200 3010   (act0)
+Forward propagation
+
+0.82	1206 1011	exp(distance_max) ^1.0	dAdr_ratio ^-1.0	
+0.81	1208 1011	exp(sections_maxdist) ^1.0	dAdr_ratio ^-1.0	
+0.81	1011 1219	dAdr_ratio ^-1.0	exp(branchdensityII) ^-1.0	
+0.80	1011 2211	dAdr_ratio ^-1.0	exp(adiam_mean) ^-1.0	
+0.80	1011 1226	dAdr_ratio ^-1.0	exp(mean_stem_dendrite_diam) ^1.0	
+0.80	1101 1011	ln(darea_maxdist) ^1.0	dAdr_ratio ^-1.0	
+0.80	1011 1228	dAdr_ratio ^-1.0	exp(rallratio_noend_mean) ^1.0	
+0.80	1011 2011	dAdr_ratio ^-1.0	adiam_mean ^-1.0	
+0.80	1203 1011	exp(branchpoints_num) ^-1.0	dAdr_ratio ^-1.0	
+0.80	1011 1212	dAdr_ratio ^-1.0	exp(dAdr_relmax) ^-1.0	
+0.80	1106 1011	ln(distance_max) ^1.0	dAdr_ratio ^-1.0	
+0.80	1011 1224	dAdr_ratio ^-1.0	exp(diamratio_noend_peak) ^1.0	
+0.79	1200 1011	exp(darea_max) ^-1.0	dAdr_ratio ^-1.0	
+0.79	1011 1220	dAdr_ratio ^-1.0	exp(diamratio_peak) ^1.0	
+0.79	1011 1217	dAdr_ratio ^-1.0	exp(diam_mean) ^-1.0	
+0.79	1011 1213	dAdr_ratio ^-1.0	exp(d2area_max) ^-1.0	
+0.79	1011 1216	dAdr_ratio ^-1.0	exp(d2area_maxAr_percent) ^-1.0	
+0.79	1011 1225	dAdr_ratio ^-1.0	exp(diamratio_noend_mean) ^1.0	
+0.79	1204 1011	exp(rallratio_mean) ^1.0	dAdr_ratio ^-1.0	
+0.79	1011 1222	dAdr_ratio ^-1.0	exp(branchdensity_noend) ^-1.0	
+0.79	1011 1223	dAdr_ratio ^-1.0	exp(branchdensityII_noend) ^-1.0	
+0.79	1211 1011	exp(dAdr_ratio) ^-1.0	dAdr_ratio ^-1.0	
+0.79	1011 1211	dAdr_ratio ^-1.0	exp(dAdr_ratio) ^-1.0	
+0.79	1011 1124	dAdr_ratio ^-1.0	ln(diamratio_noend_peak) ^1.0	
+0.79	1011 1128	dAdr_ratio ^-1.0	ln(rallratio_noend_mean) ^1.0	
+0.79	1011 1125	dAdr_ratio ^-1.0	ln(diamratio_noend_mean) ^1.0	
+0.79	1011 1020	dAdr_ratio ^-1.0	diamratio_peak ^1.0	
+0.79	1011 1127	dAdr_ratio ^-1.0	ln(rallratio_noend_peak) ^1.0	
+0.79	1011 1218	dAdr_ratio ^-1.0	exp(branchdensity) ^-1.0	
+0.79	1011 1118	dAdr_ratio ^-1.0	ln(branchdensity) ^1.0	
+0.78	1209 1011	exp(sections_mean) ^-1.0	dAdr_ratio ^-1.0	
+0.78	1011 1126	dAdr_ratio ^-1.0	ln(mean_stem_dendrite_diam) ^1.0	
+0.78	1011 1016	dAdr_ratio ^-1.0	d2area_maxAr_percent ^-1.0	
+0.78	1201 1011	exp(darea_maxdist) ^1.0	dAdr_ratio ^-1.0	
+0.78	1011 1123	dAdr_ratio ^-1.0	ln(branchdensityII_noend) ^1.0	
+0.78	1011 1214	dAdr_ratio ^-1.0	exp(d2area_maxdist) ^1.0	
+0.78	1011 1122	dAdr_ratio ^-1.0	ln(branchdensity_noend) ^1.0	
+0.78	1103 1011	ln(branchpoints_num) ^1.0	dAdr_ratio ^-1.0	
+0.78	1008 1011	sections_maxdist ^1.0	dAdr_ratio ^-1.0	
+0.78	1006 1011	distance_max ^1.0	dAdr_ratio ^-1.0	
+0.78	1011 1215	dAdr_ratio ^-1.0	exp(d2area_maxAr_ratio) ^-1.0	
+0.78	1202 1011	exp(area_max) ^-1.0	dAdr_ratio ^-1.0	
+0.77	1011 1117	dAdr_ratio ^-1.0	ln(diam_mean) ^1.0	
+0.77	1011 1017	dAdr_ratio ^-1.0	diam_mean ^-1.0	
+0.77	1011 1227	dAdr_ratio ^-1.0	exp(rallratio_noend_peak) ^1.0	
+0.77	1207 1011	exp(sections_max) ^-1.0	dAdr_ratio ^-1.0	
+0.77	1011 1024	dAdr_ratio ^-1.0	diamratio_noend_peak ^1.0	
+0.77	1011 1116	dAdr_ratio ^-1.0	ln(d2area_maxAr_percent) ^1.0	
+0.77	1011 1221	dAdr_ratio ^-1.0	exp(diamratio_mean) ^1.0	
+0.77	1011 1119	dAdr_ratio ^-1.0	ln(branchdensityII) ^1.0	
+0.77	1004 1011	rallratio_mean ^1.0	dAdr_ratio ^-1.0	
+0.77	1011 1025	dAdr_ratio ^-1.0	diamratio_noend_mean ^1.0	
+0.77	1110 1011	ln(taper_mean) ^1.0	dAdr_ratio ^-1.0	
+0.77	1011 1115	dAdr_ratio ^-1.0	ln(d2area_maxAr_ratio) ^1.0	
+0.77	1011 1121	dAdr_ratio ^-1.0	ln(diamratio_mean) ^1.0	
+0.77	1011 1028	dAdr_ratio ^-1.0	rallratio_noend_mean ^1.0	
+0.77	1205 1011	exp(rallratio_peak) ^-1.0	dAdr_ratio ^-1.0	
+0.76	1011 1112	dAdr_ratio ^-1.0	ln(dAdr_relmax) ^1.0	
+0.76	1011 1021	dAdr_ratio ^-1.0	diamratio_mean ^1.0	
+0.76	1109 1011	ln(sections_mean) ^1.0	dAdr_ratio ^-1.0	
+0.76	1102 1011	ln(area_max) ^1.0	dAdr_ratio ^-1.0	
+0.76	1100 1011	ln(darea_max) ^1.0	dAdr_ratio ^-1.0	
+0.76	1210 1011	exp(taper_mean) ^-1.0	dAdr_ratio ^-1.0	
+0.76	1011 2111	dAdr_ratio ^-1.0	ln(adiam_mean) ^1.0	
+0.75	1005 1011	rallratio_peak ^-1.0	dAdr_ratio ^-1.0	
+0.75	1104 1011	ln(rallratio_mean) ^1.0	dAdr_ratio ^-1.0	
+0.75	1105 1011	ln(rallratio_peak) ^1.0	dAdr_ratio ^-1.0	
+0.75	1001 1011	darea_maxdist ^1.0	dAdr_ratio ^-1.0	
+0.74	1011 1014	dAdr_ratio ^-1.0	d2area_maxdist ^1.0	
+-0.73	1111 1111	ln(dAdr_ratio) ^1.0	ln(dAdr_ratio) ^1.0	
+0.73	1011 1027	dAdr_ratio ^-1.0	rallratio_noend_peak ^1.0	
+0.72	1108 1011	ln(sections_maxdist) ^1.0	dAdr_ratio ^-1.0	
+
+
+

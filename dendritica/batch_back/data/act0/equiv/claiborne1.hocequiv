@@ -1,0 +1,734 @@
+create soma
+create dend[182]
+
+soma.diam = 6.6500
+soma.L    = 4.61301429
+
+dend[0].diam = 6.6500
+dend[0].L    = 4.6130
+soma connect dend[0](0), 1
+
+dend[1].diam = 9.1979
+dend[1].L    = 5.4252
+dend[0] connect dend[1](0), 1
+
+dend[2].diam = 6.5087
+dend[2].L    = 4.5637
+dend[1] connect dend[2](0), 1
+
+dend[3].diam = 4.2106
+dend[3].L    = 3.6707
+dend[2] connect dend[3](0), 1
+
+dend[4].diam = 4.2106
+dend[4].L    = 3.6707
+dend[3] connect dend[4](0), 1
+
+dend[5].diam = 3.9474
+dend[5].L    = 3.5541
+dend[4] connect dend[5](0), 1
+
+dend[6].diam = 5.8484
+dend[6].L    = 4.3261
+dend[5] connect dend[6](0), 1
+
+dend[7].diam = 3.6843
+dend[7].L    = 3.4336
+dend[6] connect dend[7](0), 1
+
+dend[8].diam = 3.6843
+dend[8].L    = 3.4336
+dend[7] connect dend[8](0), 1
+
+dend[9].diam = 3.1579
+dend[9].L    = 3.1789
+dend[8] connect dend[9](0), 1
+
+dend[10].diam = 2.6316
+dend[10].L    = 2.9019
+dend[9] connect dend[10](0), 1
+
+dend[11].diam = 4.3888
+dend[11].L    = 3.7475
+dend[10] connect dend[11](0), 1
+
+dend[12].diam = 4.3888
+dend[12].L    = 3.7475
+dend[11] connect dend[12](0), 1
+
+dend[13].diam = 4.6047
+dend[13].L    = 3.8386
+dend[12] connect dend[13](0), 1
+
+dend[14].diam = 4.6047
+dend[14].L    = 3.8386
+dend[13] connect dend[14](0), 1
+
+dend[15].diam = 4.6047
+dend[15].L    = 3.8386
+dend[14] connect dend[15](0), 1
+
+dend[16].diam = 4.6047
+dend[16].L    = 3.8386
+dend[15] connect dend[16](0), 1
+
+dend[17].diam = 4.6047
+dend[17].L    = 3.8386
+dend[16] connect dend[17](0), 1
+
+dend[18].diam = 4.6047
+dend[18].L    = 3.8386
+dend[17] connect dend[18](0), 1
+
+dend[19].diam = 4.6047
+dend[19].L    = 3.8386
+dend[18] connect dend[19](0), 1
+
+dend[20].diam = 4.6047
+dend[20].L    = 3.8386
+dend[19] connect dend[20](0), 1
+
+dend[21].diam = 4.6047
+dend[21].L    = 3.8386
+dend[20] connect dend[21](0), 1
+
+dend[22].diam = 4.6047
+dend[22].L    = 3.8386
+dend[21] connect dend[22](0), 1
+
+dend[23].diam = 4.6047
+dend[23].L    = 3.8386
+dend[22] connect dend[23](0), 1
+
+dend[24].diam = 4.4087
+dend[24].L    = 3.7560
+dend[23] connect dend[24](0), 1
+
+dend[25].diam = 4.4087
+dend[25].L    = 3.7560
+dend[24] connect dend[25](0), 1
+
+dend[26].diam = 4.4087
+dend[26].L    = 3.7560
+dend[25] connect dend[26](0), 1
+
+dend[27].diam = 4.2192
+dend[27].L    = 3.6744
+dend[26] connect dend[27](0), 1
+
+dend[28].diam = 4.2192
+dend[28].L    = 3.6744
+dend[27] connect dend[28](0), 1
+
+dend[29].diam = 4.2192
+dend[29].L    = 3.6744
+dend[28] connect dend[29](0), 1
+
+dend[30].diam = 4.4087
+dend[30].L    = 3.7560
+dend[29] connect dend[30](0), 1
+
+dend[31].diam = 4.1879
+dend[31].L    = 3.6608
+dend[30] connect dend[31](0), 1
+
+dend[32].diam = 4.1879
+dend[32].L    = 3.6608
+dend[31] connect dend[32](0), 1
+
+dend[33].diam = 5.2947
+dend[33].L    = 4.1162
+dend[32] connect dend[33](0), 1
+
+dend[34].diam = 5.2947
+dend[34].L    = 4.1162
+dend[33] connect dend[34](0), 1
+
+dend[35].diam = 5.2947
+dend[35].L    = 4.1162
+dend[34] connect dend[35](0), 1
+
+dend[36].diam = 5.1222
+dend[36].L    = 4.0486
+dend[35] connect dend[36](0), 1
+
+dend[37].diam = 5.1222
+dend[37].L    = 4.0486
+dend[36] connect dend[37](0), 1
+
+dend[38].diam = 5.1222
+dend[38].L    = 4.0486
+dend[37] connect dend[38](0), 1
+
+dend[39].diam = 5.2075
+dend[39].L    = 4.0822
+dend[38] connect dend[39](0), 1
+
+dend[40].diam = 5.2075
+dend[40].L    = 4.0822
+dend[39] connect dend[40](0), 1
+
+dend[41].diam = 5.3835
+dend[41].L    = 4.1506
+dend[40] connect dend[41](0), 1
+
+dend[42].diam = 5.4740
+dend[42].L    = 4.1853
+dend[41] connect dend[42](0), 1
+
+dend[43].diam = 5.4740
+dend[43].L    = 4.1853
+dend[42] connect dend[43](0), 1
+
+dend[44].diam = 5.4740
+dend[44].L    = 4.1853
+dend[43] connect dend[44](0), 1
+
+dend[45].diam = 5.4740
+dend[45].L    = 4.1853
+dend[44] connect dend[45](0), 1
+
+dend[46].diam = 5.4740
+dend[46].L    = 4.1853
+dend[45] connect dend[46](0), 1
+
+dend[47].diam = 5.4740
+dend[47].L    = 4.1853
+dend[46] connect dend[47](0), 1
+
+dend[48].diam = 5.4740
+dend[48].L    = 4.1853
+dend[47] connect dend[48](0), 1
+
+dend[49].diam = 5.4740
+dend[49].L    = 4.1853
+dend[48] connect dend[49](0), 1
+
+dend[50].diam = 5.3835
+dend[50].L    = 4.1506
+dend[49] connect dend[50](0), 1
+
+dend[51].diam = 5.3835
+dend[51].L    = 4.1506
+dend[50] connect dend[51](0), 1
+
+dend[52].diam = 5.3835
+dend[52].L    = 4.1506
+dend[51] connect dend[52](0), 1
+
+dend[53].diam = 6.0564
+dend[53].L    = 4.4023
+dend[52] connect dend[53](0), 1
+
+dend[54].diam = 6.0564
+dend[54].L    = 4.4023
+dend[53] connect dend[54](0), 1
+
+dend[55].diam = 5.7322
+dend[55].L    = 4.2829
+dend[54] connect dend[55](0), 1
+
+dend[56].diam = 5.6509
+dend[56].L    = 4.2524
+dend[55] connect dend[56](0), 1
+
+dend[57].diam = 5.6509
+dend[57].L    = 4.2524
+dend[56] connect dend[57](0), 1
+
+dend[58].diam = 5.6509
+dend[58].L    = 4.2524
+dend[57] connect dend[58](0), 1
+
+dend[59].diam = 5.6509
+dend[59].L    = 4.2524
+dend[58] connect dend[59](0), 1
+
+dend[60].diam = 5.6509
+dend[60].L    = 4.2524
+dend[59] connect dend[60](0), 1
+
+dend[61].diam = 5.6509
+dend[61].L    = 4.2524
+dend[60] connect dend[61](0), 1
+
+dend[62].diam = 5.6509
+dend[62].L    = 4.2524
+dend[61] connect dend[62](0), 1
+
+dend[63].diam = 5.6509
+dend[63].L    = 4.2524
+dend[62] connect dend[63](0), 1
+
+dend[64].diam = 5.6509
+dend[64].L    = 4.2524
+dend[63] connect dend[64](0), 1
+
+dend[65].diam = 6.4780
+dend[65].L    = 4.5530
+dend[64] connect dend[65](0), 1
+
+dend[66].diam = 6.4780
+dend[66].L    = 4.5530
+dend[65] connect dend[66](0), 1
+
+dend[67].diam = 6.4780
+dend[67].L    = 4.5530
+dend[66] connect dend[67](0), 1
+
+dend[68].diam = 6.4780
+dend[68].L    = 4.5530
+dend[67] connect dend[68](0), 1
+
+dend[69].diam = 6.4780
+dend[69].L    = 4.5530
+dend[68] connect dend[69](0), 1
+
+dend[70].diam = 6.4780
+dend[70].L    = 4.5530
+dend[69] connect dend[70](0), 1
+
+dend[71].diam = 6.4780
+dend[71].L    = 4.5530
+dend[70] connect dend[71](0), 1
+
+dend[72].diam = 6.4780
+dend[72].L    = 4.5530
+dend[71] connect dend[72](0), 1
+
+dend[73].diam = 6.4780
+dend[73].L    = 4.5530
+dend[72] connect dend[73](0), 1
+
+dend[74].diam = 6.4780
+dend[74].L    = 4.5530
+dend[73] connect dend[74](0), 1
+
+dend[75].diam = 6.4780
+dend[75].L    = 4.5530
+dend[74] connect dend[75](0), 1
+
+dend[76].diam = 7.2553
+dend[76].L    = 4.8184
+dend[75] connect dend[76](0), 1
+
+dend[77].diam = 7.2553
+dend[77].L    = 4.8184
+dend[76] connect dend[77](0), 1
+
+dend[78].diam = 7.2553
+dend[78].L    = 4.8184
+dend[77] connect dend[78](0), 1
+
+dend[79].diam = 7.2553
+dend[79].L    = 4.8184
+dend[78] connect dend[79](0), 1
+
+dend[80].diam = 7.2553
+dend[80].L    = 4.8184
+dend[79] connect dend[80](0), 1
+
+dend[81].diam = 7.2553
+dend[81].L    = 4.8184
+dend[80] connect dend[81](0), 1
+
+dend[82].diam = 7.2553
+dend[82].L    = 4.8184
+dend[81] connect dend[82](0), 1
+
+dend[83].diam = 7.2553
+dend[83].L    = 4.8184
+dend[82] connect dend[83](0), 1
+
+dend[84].diam = 7.2553
+dend[84].L    = 4.8184
+dend[83] connect dend[84](0), 1
+
+dend[85].diam = 7.2553
+dend[85].L    = 4.8184
+dend[84] connect dend[85](0), 1
+
+dend[86].diam = 7.2553
+dend[86].L    = 4.8184
+dend[85] connect dend[86](0), 1
+
+dend[87].diam = 8.2033
+dend[87].L    = 5.1235
+dend[86] connect dend[87](0), 1
+
+dend[88].diam = 8.2033
+dend[88].L    = 5.1235
+dend[87] connect dend[88](0), 1
+
+dend[89].diam = 8.2033
+dend[89].L    = 5.1235
+dend[88] connect dend[89](0), 1
+
+dend[90].diam = 8.0613
+dend[90].L    = 5.0790
+dend[89] connect dend[90](0), 1
+
+dend[91].diam = 8.0613
+dend[91].L    = 5.0790
+dend[90] connect dend[91](0), 1
+
+dend[92].diam = 8.0613
+dend[92].L    = 5.0790
+dend[91] connect dend[92](0), 1
+
+dend[93].diam = 7.9929
+dend[93].L    = 5.0574
+dend[92] connect dend[93](0), 1
+
+dend[94].diam = 7.9929
+dend[94].L    = 5.0574
+dend[93] connect dend[94](0), 1
+
+dend[95].diam = 7.9929
+dend[95].L    = 5.0574
+dend[94] connect dend[95](0), 1
+
+dend[96].diam = 7.9929
+dend[96].L    = 5.0574
+dend[95] connect dend[96](0), 1
+
+dend[97].diam = 7.9929
+dend[97].L    = 5.0574
+dend[96] connect dend[97](0), 1
+
+dend[98].diam = 7.9929
+dend[98].L    = 5.0574
+dend[97] connect dend[98](0), 1
+
+dend[99].diam = 7.9929
+dend[99].L    = 5.0574
+dend[98] connect dend[99](0), 1
+
+dend[100].diam = 7.9929
+dend[100].L    = 5.0574
+dend[99] connect dend[100](0), 1
+
+dend[101].diam = 7.9929
+dend[101].L    = 5.0574
+dend[100] connect dend[101](0), 1
+
+dend[102].diam = 7.9929
+dend[102].L    = 5.0574
+dend[101] connect dend[102](0), 1
+
+dend[103].diam = 7.9929
+dend[103].L    = 5.0574
+dend[102] connect dend[103](0), 1
+
+dend[104].diam = 7.9929
+dend[104].L    = 5.0574
+dend[103] connect dend[104](0), 1
+
+dend[105].diam = 7.9929
+dend[105].L    = 5.0574
+dend[104] connect dend[105](0), 1
+
+dend[106].diam = 7.9929
+dend[106].L    = 5.0574
+dend[105] connect dend[106](0), 1
+
+dend[107].diam = 7.9929
+dend[107].L    = 5.0574
+dend[106] connect dend[107](0), 1
+
+dend[108].diam = 7.9929
+dend[108].L    = 5.0574
+dend[107] connect dend[108](0), 1
+
+dend[109].diam = 7.9929
+dend[109].L    = 5.0574
+dend[108] connect dend[109](0), 1
+
+dend[110].diam = 7.9929
+dend[110].L    = 5.0574
+dend[109] connect dend[110](0), 1
+
+dend[111].diam = 7.2553
+dend[111].L    = 4.8184
+dend[110] connect dend[111](0), 1
+
+dend[112].diam = 7.1000
+dend[112].L    = 4.7665
+dend[111] connect dend[112](0), 1
+
+dend[113].diam = 7.8450
+dend[113].L    = 5.0104
+dend[112] connect dend[113](0), 1
+
+dend[114].diam = 7.7039
+dend[114].L    = 4.9651
+dend[113] connect dend[114](0), 1
+
+dend[115].diam = 7.7039
+dend[115].L    = 4.9651
+dend[114] connect dend[115](0), 1
+
+dend[116].diam = 7.7039
+dend[116].L    = 4.9651
+dend[115] connect dend[116](0), 1
+
+dend[117].diam = 7.7039
+dend[117].L    = 4.9651
+dend[116] connect dend[117](0), 1
+
+dend[118].diam = 7.7039
+dend[118].L    = 4.9651
+dend[117] connect dend[118](0), 1
+
+dend[119].diam = 7.7039
+dend[119].L    = 4.9651
+dend[118] connect dend[119](0), 1
+
+dend[120].diam = 7.7039
+dend[120].L    = 4.9651
+dend[119] connect dend[120](0), 1
+
+dend[121].diam = 7.7039
+dend[121].L    = 4.9651
+dend[120] connect dend[121](0), 1
+
+dend[122].diam = 7.7039
+dend[122].L    = 4.9651
+dend[121] connect dend[122](0), 1
+
+dend[123].diam = 7.7039
+dend[123].L    = 4.9651
+dend[122] connect dend[123](0), 1
+
+dend[124].diam = 7.7039
+dend[124].L    = 4.9651
+dend[123] connect dend[124](0), 1
+
+dend[125].diam = 7.7039
+dend[125].L    = 4.9651
+dend[124] connect dend[125](0), 1
+
+dend[126].diam = 7.7039
+dend[126].L    = 4.9651
+dend[125] connect dend[126](0), 1
+
+dend[127].diam = 7.7039
+dend[127].L    = 4.9651
+dend[126] connect dend[127](0), 1
+
+dend[128].diam = 7.7039
+dend[128].L    = 4.9651
+dend[127] connect dend[128](0), 1
+
+dend[129].diam = 7.7039
+dend[129].L    = 4.9651
+dend[128] connect dend[129](0), 1
+
+dend[130].diam = 8.4212
+dend[130].L    = 5.1911
+dend[129] connect dend[130](0), 1
+
+dend[131].diam = 8.4212
+dend[131].L    = 5.1911
+dend[130] connect dend[131](0), 1
+
+dend[132].diam = 8.4212
+dend[132].L    = 5.1911
+dend[131] connect dend[132](0), 1
+
+dend[133].diam = 8.4212
+dend[133].L    = 5.1911
+dend[132] connect dend[133](0), 1
+
+dend[134].diam = 8.4212
+dend[134].L    = 5.1911
+dend[133] connect dend[134](0), 1
+
+dend[135].diam = 8.4212
+dend[135].L    = 5.1911
+dend[134] connect dend[135](0), 1
+
+dend[136].diam = 8.4212
+dend[136].L    = 5.1911
+dend[135] connect dend[136](0), 1
+
+dend[137].diam = 8.4212
+dend[137].L    = 5.1911
+dend[136] connect dend[137](0), 1
+
+dend[138].diam = 8.4212
+dend[138].L    = 5.1911
+dend[137] connect dend[138](0), 1
+
+dend[139].diam = 8.4212
+dend[139].L    = 5.1911
+dend[138] connect dend[139](0), 1
+
+dend[140].diam = 8.4212
+dend[140].L    = 5.1911
+dend[139] connect dend[140](0), 1
+
+dend[141].diam = 8.4212
+dend[141].L    = 5.1911
+dend[140] connect dend[141](0), 1
+
+dend[142].diam = 8.4212
+dend[142].L    = 5.1911
+dend[141] connect dend[142](0), 1
+
+dend[143].diam = 8.4212
+dend[143].L    = 5.1911
+dend[142] connect dend[143](0), 1
+
+dend[144].diam = 8.4212
+dend[144].L    = 5.1911
+dend[143] connect dend[144](0), 1
+
+dend[145].diam = 8.4212
+dend[145].L    = 5.1911
+dend[144] connect dend[145](0), 1
+
+dend[146].diam = 8.4212
+dend[146].L    = 5.1911
+dend[145] connect dend[146](0), 1
+
+dend[147].diam = 7.7039
+dend[147].L    = 4.9651
+dend[146] connect dend[147](0), 1
+
+dend[148].diam = 7.7039
+dend[148].L    = 4.9651
+dend[147] connect dend[148](0), 1
+
+dend[149].diam = 6.9515
+dend[149].L    = 4.7164
+dend[148] connect dend[149](0), 1
+
+dend[150].diam = 6.9515
+dend[150].L    = 4.7164
+dend[149] connect dend[150](0), 1
+
+dend[151].diam = 6.9515
+dend[151].L    = 4.7164
+dend[150] connect dend[151](0), 1
+
+dend[152].diam = 6.9515
+dend[152].L    = 4.7164
+dend[151] connect dend[152](0), 1
+
+dend[153].diam = 6.9515
+dend[153].L    = 4.7164
+dend[152] connect dend[153](0), 1
+
+dend[154].diam = 6.9515
+dend[154].L    = 4.7164
+dend[153] connect dend[154](0), 1
+
+dend[155].diam = 6.1559
+dend[155].L    = 4.4383
+dend[154] connect dend[155](0), 1
+
+dend[156].diam = 6.1559
+dend[156].L    = 4.4383
+dend[155] connect dend[156](0), 1
+
+dend[157].diam = 6.1559
+dend[157].L    = 4.4383
+dend[156] connect dend[157](0), 1
+
+dend[158].diam = 6.1559
+dend[158].L    = 4.4383
+dend[157] connect dend[158](0), 1
+
+dend[159].diam = 6.1559
+dend[159].L    = 4.4383
+dend[158] connect dend[159](0), 1
+
+dend[160].diam = 6.1559
+dend[160].L    = 4.4383
+dend[159] connect dend[160](0), 1
+
+dend[161].diam = 5.3050
+dend[161].L    = 4.1202
+dend[160] connect dend[161](0), 1
+
+dend[162].diam = 5.3050
+dend[162].L    = 4.1202
+dend[161] connect dend[162](0), 1
+
+dend[163].diam = 5.3050
+dend[163].L    = 4.1202
+dend[162] connect dend[163](0), 1
+
+dend[164].diam = 4.3792
+dend[164].L    = 3.7434
+dend[163] connect dend[164](0), 1
+
+dend[165].diam = 4.3792
+dend[165].L    = 3.7434
+dend[164] connect dend[165](0), 1
+
+dend[166].diam = 4.3792
+dend[166].L    = 3.7434
+dend[165] connect dend[166](0), 1
+
+dend[167].diam = 4.3792
+dend[167].L    = 3.7434
+dend[166] connect dend[167](0), 1
+
+dend[168].diam = 4.3792
+dend[168].L    = 3.7434
+dend[167] connect dend[168](0), 1
+
+dend[169].diam = 4.3792
+dend[169].L    = 3.7434
+dend[168] connect dend[169](0), 1
+
+dend[170].diam = 4.3792
+dend[170].L    = 3.7434
+dend[169] connect dend[170](0), 1
+
+dend[171].diam = 4.3792
+dend[171].L    = 3.7434
+dend[170] connect dend[171](0), 1
+
+dend[172].diam = 4.3792
+dend[172].L    = 3.7434
+dend[171] connect dend[172](0), 1
+
+dend[173].diam = 3.3419
+dend[173].L    = 3.2702
+dend[172] connect dend[173](0), 1
+
+dend[174].diam = 3.3419
+dend[174].L    = 3.2702
+dend[173] connect dend[174](0), 1
+
+dend[175].diam = 3.3419
+dend[175].L    = 3.2702
+dend[174] connect dend[175](0), 1
+
+dend[176].diam = 3.3419
+dend[176].L    = 3.2702
+dend[175] connect dend[176](0), 1
+
+dend[177].diam = 3.3419
+dend[177].L    = 3.2702
+dend[176] connect dend[177](0), 1
+
+dend[178].diam = 3.3419
+dend[178].L    = 3.2702
+dend[177] connect dend[178](0), 1
+
+dend[179].diam = 3.3419
+dend[179].L    = 3.2702
+dend[178] connect dend[179](0), 1
+
+dend[180].diam = 3.3419
+dend[180].L    = 3.2702
+dend[179] connect dend[180](0), 1
+
+dend[181].diam = 2.1053
+dend[181].L    = 2.5956
+dend[180] connect dend[181](0), 1
+

@@ -1,0 +1,707 @@
+/* Relating dendritic geometry and signal propagation   */
+/* parse.hoc Version 1.0                                */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+xopen("$(NEURONHOME)/lib/hoc/noload.hoc")		/* gets standard GUI */
+load_proc("nrnmainmenu")			
+stoprun 	= 0                     /* vitally important for fit_praxis */
+n_axon_seg  	= 5		/* # nodes in synthetic axon */
+equiv 	= 0
+printfunc   	= 1
+VClampScale 	= 1
+nsections 	= 10000		// risetime recording vectors
+n 		= 5  
+diffvonset=0
+hdecay 		= 0
+
+J 	= 46  // number of functional parameters
+nfunc 	= 37
+ngeom 	= 26
+nelec 	= 11
+mix = 0
+
+
+create iseg, hill, myelin[n_axon_seg], node[n_axon_seg], inactive
+
+
+/****** objects  *******************************************/
+
+begintemplate MyString
+public str, n, explanation
+strdef str
+strdef explanation
+double n[1]
+endtemplate MyString
+
+
+begintemplate MyCell
+ public n, loc, tag, somatic, distal, spinescale, type
+ strdef n, loc, tag, somatic, distal 
+ double spinescale[1], type[1]
+endtemplate MyCell
+
+
+/****** global **********************/
+objref ppl // point Process locator
+objref          pltshape, grph
+objref		strob, fileob, vectorlist, sref	/* for I/O operations; buffer */
+strob 		= new StringFunctions()
+fileob 		= new File()
+
+strdef dcell, dcellname, dcelladdress, dcore, dsuffix
+strdef str5
+strdef date
+date             = "28/499"
+strdef act0, act1, act2, act3,act4,act5,act6, actname, cellnameact, activecell
+strdef ActiveModel, cellname, cell
+strdef 	xlab, ylab, dataplotlab, hlpstr, Ylab, suffix
+strdef 	helpinfo, helpstr
+strdef	str1, origins, cellvar, origindist, str2, sec
+strdef 	activecell, cellname, cell, celladdress, celladdressfull /* cellnames */
+strdef	cellnameact, core
+strdef 	ActiveModel /* name of active m  */
+strdef Yvalstr, Xval1str, Xval2str, Xval3str
+
+strdef halfdecay_maxlocation, halfdecay_minlocation 
+strdef ap200_minlocation,     ap200_maxlocation
+strdef apsoma_minlocation,    apsoma_maxlocation
+strdef locs
+
+objref parameters
+objref rinloc[3]
+objref CellList
+
+CellList = new List("MyCell")
+vectorlist = new List("Vector")
+parameters = new List("MyString")
+grph       = new List("Graph")
+pltshape   = new List("PlotShape")
+
+
+objref multi
+objref dlog
+objref vbox1
+objref  splot, waveform, wave
+objref 	cellc, sens[3], geomorder
+objref  st, impR,imp, vclamp, Vclamp, Iclamp,  synapse, Synapse /*point processes*/
+objref	dendrites, dendritesI, dendritesII, dendritesIII	/*sectionlists*/
+objref	trunk, all, branchpoints, terminations, distlist
+objref 	Soma, Distal, Parent 	/* sectionrefs */
+objref	tdist, adist, bdist, xdist, dist, nbdist, nadist, gdist	/*distance vecs*/
+objref  vpk, amp, vmax, plat, olat, half, ref, ref2, ref3, ref4, dvdr, vrest /*distlist vcs*/
+objref  Zmismatch, Rmismatch, aZmismatch, aRmismatch			
+objref  Zback, Rback, aZback, aRback					
+objref  Zfwd, Rfwd, aZfwd, aRfwd				
+objref  Z, R2, aZ, aR							
+objref	dAr, Ar, mdiam, cdiam, rdiam, sections	/*gdist vectors*/
+objref 	branchpointdiam, relareadiam, ralldiam, updst, somadist/*brchpt*/
+objref	somadist_noend, updst_noend, branchpointdiam_noend
+objref	ralldiam_noend, relareadiam_noend, ralldiam_noend
+objref 	tap_dist, tap_ddist, tap_ddiam
+objref 	terminationdist		/*termination vecs*/
+objref 	vsoma,vdend,vnode,voltrec,synapserec,vtrace  /*recording vecs*/
+objref  cf /* for Roth Purkinje cell DendriteII SectionList */
+
+
+/************** local *******************************************************/
+
+d = 6
+objref 	Tdist[2], Adist[2], Bdist[2], Xdist[2],Gdist[2] /*el*/
+objref	Nbdist[2], Nadist[2]
+objref 	DAr[2], AR[2]			/* dArea(gdist),Area(gdist)*/ 
+objref 	amp,vmax,plat,olat,half,vpk,dvdr,vrest /*sim*/ 
+objref	ZMismatch[d],RMismatch[d],AZmismatch[d],ARmismatch[d] /*distlist vecs*/
+objref	ZBack[d], AZback[d],RBack[d], ARback[d], ZFwd[d]
+objref	AZfwd[d], RFwd[d], ARfwd[d], Zs[d], AZ[d], Rs[d], ARs[d]
+objref	branchpoints, all, trunk, terminations /* SectionLists */
+objref	origin, originsec
+
+
+/************* geometry *****************************************************/
+
+objref 	children, branchselection					
+objref 	Mdiam[2], Rdiam[2], Cdiam[2], Sections[2] /* equiv_diam */
+objref 	Branchpointdiam[2],Relareadiam[2],Ralldiam[2] /*branchpt vecs*/
+objref	Updst[2], Somadist[2]
+objref	Somadist_noend[2], Updst_noend[2]
+objref	Branchpointdiam_noend[2], Ralldiam_noend[2]
+objref	Relareadiam_noend[2]
+
+objref	Terminationdist[2]			/* termination vecs  */
+objref	diameterlist, branchpointd, relaread, ralld	/* get_rall()   */
+objref 	dchild, dparent, dY, ch				/* ralldiameter()   */
+objref 	updstances
+objref 	Rpas, Rpas_percent, Zpas, Zpas_percent	// Impedance for list
+objref 	Ract, Ract_percent, Zact, Zact_percent
+
+
+/********* impedance *********************************************************/
+
+objref 	seglist, gk, gna
+objref 	datavec						/* cosine fitting  */
+objref  pa_connection, ch_connection, childref, childvar, parentref
+objref 	gpas,cmem					/* intrasection_on/off*/
+objref 	peaktimes,selection, segnum
+objref 	vrec[nsections],trec[nsections], Zfrequency	/* for AP rising phase */
+
+/********* statistics ********************************************************/
+
+double 	param[10]					/* statistics.hoc */
+objref 	data[3][50][3] // [functional/geometric/elgeom][#][fxn]
+objref 	Data[3][50][3] // [functional/geometric/elgeom][#][fxn]
+objref 	corr[40], goodcorr[7]
+objref 	recvec[2000]
+objref  ref3,ref4,ref5
+
+/************* other  ****************************/
+
+objref 	link,link2 	/* for electrotonic distance */
+objref 	time
+objref 	tobj
+objref 	vrec[11000]
+objref 	vlt, rin, tau
+objref	info[200]	/* output */
+objref 	AP200v
+objref 	branchpt_noend, all_noend
+
+/************* graphics **************************/
+
+strdef 	Nathreshold
+objref 	save_window_, rvp_,scene_vector_[4]	/* old window_settings */
+objref 	number					/* mx(),mn()	*/
+objref 	histy,histx				/* hist()	*/
+objref 	onex, oney				/* various plot */
+objref 	gaussy, gaussx				/* gauss()	*/
+objref 	barx, bary				/* bar()    */
+objref 	Ix, v1, v2				/* sort() */
+objref 	x1,y1, figure[50]			/* fig()  */
+objref 	colour, add				/* fig */
+strdef 	figsymbol
+objref 	ix, iy, ixn, iyn, ir
+objref 	veca, vecb, vecc // rawdata
+objref 	vecx, vecy
+objref 	infox, infoy, infoxn, infoyn, infor
+objref 	filterx, filtery
+objref 	rollingx, rollingy
+
+objref  rand
+
+vecy	= new Vector()
+vecx	= new Vector()
+veca	= new Vector()
+vecb	= new Vector()
+vecc	= new Vector()
+infox	= new Vector()
+infoy	= new Vector()
+infoxn	= new Vector()
+infoyn	= new Vector()
+infor	= new Vector()
+
+double val[10]
+ref2 = new Vector()
+v2 = new Vector()
+
+
+
+
+
+
+
+
+/***************************************************************/
+
+
+proc get() { local i,n 
+
+	/* get cell $s1 */
+	/* use ActiveModel $s2 */
+	/* load data if numarg=3 */
+
+  	forall delete_section()		// clear all sections & vectors
+	for i = 0, vectorlist.count()-1 {vectorlist.object(i).resize(0)}
+
+	n = numarg()
+	if (n<1)	 cell        = "p18.hoc"  else cell        = $s1
+	if (n<2)	 ActiveModel = act0 else ActiveModel = $s2
+	if (n>2) 	 Read        = 0    else Read        = 1
+
+	get_settings(cell,ActiveModel)	
+	xopen(cell)			  	// read hoc file
+        if (!equiv) forall if (L/nseg > 7) nseg = int(L/7) + 1
+	make_sectionrefs()
+	create inactive
+	inactive { L=0.001 nseg = 1 diam = 0.001 }
+	connect_axon()
+	if (equiv) remove_axon()
+
+
+        Soma.sec st     = new IClamp(originx)
+        Soma.sec vclamp = new SEClamp(originx)
+	Soma.sec synapse  = new syn2(originx)
+
+	set_vclamp(origins,originx)
+
+	make_vectors()	
+	make_sectionlists()
+  	insert_channels()	
+	set_spinedensity(cell)
+	reset()
+	set_origin()
+	if (Read) { geometry_read(cell)  active_read(cell,ActiveModel)  } 
+	get_gdist(1)
+	get_gdist(0)
+   }
+
+
+/*************************************************************************/
+
+
+proc get_somadist() { local d, i, n
+
+		n = numarg()
+		if (n>0) str2 = $s1        else str2 = "p18.hoc"
+		if (n>1) ActiveModel = $s2 else ActiveModel = act0
+		if (n>2) d = $4            else d = 200
+
+		get(str2,ActiveModel,1)
+		name_somadist(d)
+		active_read(cell,ActiveModel)
+		geometry_read(cell)
+		for i = 0,1 { get_gdist(1-i) }
+		}
+
+
+/*************************************************************************/
+
+
+proc connect_axon() { 	local a,i,n  
+
+	/* Create axon  (similar to Mainen et al (Neuron, 1995) */
+		
+	if (numarg()== 0) n = 0 else n = $1
+
+	create iseg
+	create node[n_axon_seg] 
+	create hill
+	create myelin[n_axon_seg]
+
+
+	a = 0
+	Soma.sec   	for(x) 		  a += area(x) 
+			      	  equiv_diam = sqrt(a/(4*PI))
+	  		if (swc)  equiv_diam = equivdiam /*DukeSouth*/
+
+
+	for i=0,n_axon_seg-1 {		
+	iseg          { L=15  nseg=5  diam=equiv_diam/10 } /*Sloper&Powell 1982,Fig.71*/
+  	myelin[i]     { L=100 nseg=5  diam=iseg.diam  }
+    	node[i]       { L=1.0 nseg=1  diam=iseg.diam*.75 }} 
+	hill          { L=10  nseg=5  diam(0:1)=4*iseg.diam:iseg.diam }
+
+				Soma.sec      	connect hill(0), 0.5
+				hill          	connect iseg(0), 1
+				iseg       	connect myelin[0](0), 1
+				myelin[0]  	connect node[0](0), 1
+	for i=0,n_axon_seg-2  { node[i]	connect myelin[i+1](0),1
+		  		myelin[i+1] 	connect node[i+1](0),1 }
+	Axon = 1
+
+             }
+
+
+proc add_axon() { 
+		connect_axon()
+		origin.sec  distance(0,originx)
+		insert_channels()
+		reset()p
+		Axon = 1
+		define_shape()
+		}
+
+
+/*************************************************************************/
+
+proc remove_axon() {
+
+		forsec "iseg" delete_section()  // take out axon 9.2.99
+		forsec "hill" delete_section()
+		forsec "myelin" delete_section()
+		//forsec "node" delete_section() not the node - used for calcs
+
+		origin.sec distance(0,originx)
+		Axon = 0	
+		define_shape()
+		}
+
+
+/*************************************************************************/
+
+
+proc insert_channels() {	/* insert channels and set reversal potentials */
+
+
+		forall {				
+			insert pas  /* generic conductance with reverse potential */
+ 			insert pk   /* backpropagaton tools */
+			insert na  
+			insert kv
+ 			}
+
+		forsec all {
+				if(Iq_current) 	insert qq
+				if(Ca_current) 	insert cad
+				if(Ca_current) 	insert ca
+				if(KCa_current) insert kca
+				if(Km_current) 	insert km
+			     }
+
+		forsec "myelin" uninsert kv /* no delayed rectifiers in myelin */
+
+		/* set reversal potentials */
+		forall 				e_pas     = -70
+		forall if(ismembrane("k_ion"))  ek  	  = Ek
+		forall if(ismembrane("na_ion")) ena	  = Ena 
+		forall if(ismembrane("na_ion"))	vshift_na = -5  
+		forall if(ismembrane("ca_ion")) { eca     = 140   
+  			     			  ion_style("ca_ion",0,1,0,0,0)
+  			     			  vshift_ca = 0		          }
+  		   }
+
+/*************************************************************************/
+
+proc make_sectionlists() { 	local i /* make sectionlists */
+
+		dendrites    = new SectionList() /* dendrites        */
+		dendritesI   = new SectionList() /* partI dendrites  */
+		dendritesII  = new SectionList() /* for Purkinje spines */
+		dendritesIII = new SectionList() /* Rapp Purkinje */
+		branchpt_noend 	= new SectionList()
+		all_noend	= new SectionList()
+		all		= new SectionList()
+			
+		forall 		  all.append()
+		forsec "inactive" all.remove()
+		forsec "myelin"   all.remove()	/* remove axon from list */
+		forsec "node"     all.remove()
+		forsec "hill"     all.remove()
+		forsec "iseg"     all.remove()			     	
+		forsec all     dendrites.append()
+		forsec "soma"  	dendrites.remove()
+		forsec dendrites dendritesI.append()
+
+		/* trunk, all, branchpoints & terminations */
+
+		origin.sec distance(0,originx)
+
+		Distal.sec  trunk.append() 	/* trunk */
+		Distal.sec  Parent = new SectionRef()
+		Distal.sec sref = new SectionRef()
+		root = 0
+
+		while (!root)  { Parent.sec get_parent()
+				 Parent.sec trunk.append() this_section() }
+
+		forsec all { 
+				if (!isterminal()) all_noend.append() 
+
+			      	branchpoint()
+			      	if (branchnumber>=1) {branchpoints.append()
+						if (!isterminal()) branchpt_noend.append()}
+			      	if (branchnumber==-1) terminations.append() 		
+			   }
+
+		}
+
+/*************************************************************************/
+
+func isterminal() {	/* returns 1 if the downstream sections are [parts of] a terminal branch */ 
+
+
+			if (equiv) return 1
+			get_children()
+			forsec children { subtree_traverse("this_section() sref = new SectionRef()")
+					  sref.sec branchpoint()
+
+			  if (branchnumber==0)  while (branchnumber == 0) {
+				sref.sec subtree_traverse("this_section() sref = new SectionRef()")
+				sref.sec branchpoint()  	    }
+					  if (branchnumber==1) return 0
+ 					}
+			return 1
+		} 
+
+/*************************************************************************/
+
+proc make_distvectors() {	local k,i,j 
+			/* create distance vectors */
+			/* for trunk, all, branchpoints, terminations */
+			/* called by get() */
+
+	for k = 0,1 { /* loop physical & electrotonic */
+	L_switch(1-k)
+
+	origin.sec distance(0,originx)
+	tdist.resize(0)
+	adist.resize(0)
+	bdist.resize(0)
+	xdist.resize(0)
+	nbdist.resize(0)
+	nadist.resize(0)
+
+	forsec trunk        for j = 1,nseg {tdist.append(fdistance((j-.5)/nseg)) }
+	forsec all          for j = 1,nseg {adist.append(fdistance((j-.5)/nseg)) }
+	forsec branchpoints for j = 1,nseg {bdist.append(fdistance((j-.5)/nseg)) }
+	forsec terminations for j = 1,nseg {xdist.append(fdistance((j-.5)/nseg)) }
+	forsec branchpt_noend for j=1,nseg {nbdist.append(fdistance((j-.5)/nseg))}
+	forsec all_noend    for j = 1,nseg {nadist.append(fdistance((j-.5)/nseg))}
+
+			}
+		}				 
+
+
+
+proc switch()	{ 	local i,k,n,d /* switches cell, Length & dist */
+			i = $1
+			k = $2
+			n = $3			
+			d = n-1
+
+
+		if (n == 1) distlist = trunk
+		if (n == 2) distlist = all
+		if (n == 3) distlist = branchpoints
+		if (n == 4) distlist = terminations
+		if (n == 5) distlist = branchpt_noend
+		if (n == 6) distlist = all_noend
+
+		tdist 		= Tdist[k] 
+		adist 		= Adist[k] 
+		bdist 		= Bdist[k] 
+		xdist		= Xdist[k]
+		nbdist		= Nbdist[k]
+		nadist		= Nadist[k]
+
+		if (n == 1) dist = tdist
+		if (n == 2) dist = adist
+		if (n == 3) dist = bdist
+		if (n == 4) dist = xdist
+		if (n == 5) dist = nbdist
+		if (n == 6) dist = nadist
+	
+		Zmismatch	= ZMismatch[d]
+		aZmismatch	= AZmismatch[d]
+		Rmismatch	= RMismatch[d]
+		aRmismatch	= ARmismatch[d]
+		Zback		= ZBack[d]
+		aZback		= AZback[d]
+		Rback		= RBack[d]
+		aRback		= ARback[d]
+		Zfwd		= ZFwd[d]
+		aZfwd		= AZfwd[d]
+		Rfwd		= RFwd[d]
+		aRfwd		= ARfwd[d]
+		Z		= Zs[d]
+		aZ		= AZ[d]
+		R2		= Rs[d]
+		aR		= ARs[d]
+
+		gdist		= Gdist[k]	/* gdist based */
+		dAr		= DAr[k]	/* dArea(r) */
+		Ar		= AR[k]	        /* Area(r) */
+		sections	= Sections[k]   /* mean diameter(r) */
+		mdiam		= Mdiam[k]	/* # sections (r) */
+		cdiam		= Cdiam[k]	/* equiv_cross-sectional diam(r) */
+		rdiam		= Rdiam[k]	/* equiv_ralldiameter(r) */
+		somadist	= Somadist[k]   /* somadist based */
+		updst		= Updst[k]	
+		branchpointdiam = Branchpointdiam[k]	
+		ralldiam	= Ralldiam[k]		
+		relareadiam	= Relareadiam[k]	
+		ralldiam	= Ralldiam[k]		
+		terminationdist = Terminationdist[k]	
+		somadist_noend	= Somadist_noend[k]  /* somadist based */
+		updst_noend		= Updst_noend[k]	
+		branchpointdiam_noend	= Branchpointdiam_noend[k]	
+		ralldiam_noend		= Ralldiam_noend[k]		
+		relareadiam_noend	= Relareadiam_noend[k]	
+		ralldiam_noend		= Ralldiam_noend[k]		
+		}
+
+/*************************************************************************/
+
+proc dist_switch()	{	 /* set dist to use for calculations */
+				 /* $1 == 1 tdist trunk */
+				 /* $1 == 2 adist all   */
+				 /* $1 == 3 bdist branchpoints */
+				 /* $1 == 4 xdist terminations */
+				 /* $1 == 4 nbdist branchpt_noend */
+				 /* $1 == 4 nadist all_noend */
+
+				if (numarg() == 1) currentdist = $1 
+				switch(currentcell,electrotonicL,currentdist)
+			}
+
+/*************************************************************************/
+
+proc L_switch() 	{/* switch length measurement $1==1 physical, $1==0 electrotonic */
+
+				if (numarg() != 0) electrotonicL = $1
+				switch(currentcell,electrotonicL,currentdist)
+				origin.sec distance(0,originx)
+  		   	}
+
+/*************************************************************************/
+
+proc make_vectors() { local i,k,d /* create all Vectors needed during simulation */
+
+
+
+			for d = 0,5 {
+			ZMismatch[d]	= new Vector()
+			AZmismatch[d]	= new Vector()
+			RMismatch[d]	= new Vector()
+			ARmismatch[d]	= new Vector()
+			ZBack[d]	= new Vector()
+			AZback[d]	= new Vector()
+			RBack[d]	= new Vector()
+			ARback[d]	= new Vector()
+			ZFwd[d]		= new Vector()
+			AZfwd[d]	= new Vector()
+			RFwd[d]		= new Vector()
+			ARfwd[d]	= new Vector()
+			Zs[d]		= new Vector()
+			AZ[d]		= new Vector()
+			Rs[d]		= new Vector()
+			ARs[d]		= new Vector()
+						}
+
+	for k=0,1 { 
+			Tdist[k] 		= new Vector()
+			Adist[k] 		= new Vector()
+			Bdist[k] 		= new Vector()
+			Xdist[k] 		= new Vector()
+			Nbdist[k] 		= new Vector()
+			Nadist[k] 		= new Vector()
+			DAr[k]			= new Vector()	/* dArea(r) */
+			AR[k]			= new Vector()	/* Area(r) */
+			Sections[k]		= new Vector()	/* mean diameter(r) */
+			Mdiam[k]		= new Vector()	/* # sections (r) */
+			Cdiam[k]		= new Vector()	/* equiv_cross-sectional diam(r) */
+			Rdiam[k]		= new Vector()	/* equiv_ralldiameter(r) */
+			Gdist[k]		= new Vector()	/* distance vector */
+			Somadist[k]		= new Vector()	/* branchpoint-related */
+			Updst[k]		= new Vector()
+			Branchpointdiam[k]	= new Vector()
+			Ralldiam[k]		= new Vector()
+			Relareadiam[k]		= new Vector()
+			Ralldiam[k]		= new Vector()
+			Somadist_noend[k]	= new Vector()	/* branchpoint-related */
+			Updst_noend[k]		= new Vector()
+			Branchpointdiam_noend[k]	= new Vector()
+			Ralldiam_noend[k]	= new Vector()
+			Relareadiam_noend[k]	= new Vector()
+			Ralldiam_noend[k]	= new Vector()
+			Terminationdist[k]	= new Vector()  }    
+
+			single_vectors()
+				}
+
+/*************************************************************************/
+
+proc single_vectors()	{
+
+		trunk		= new SectionList()
+		all		= new SectionList()
+		branchpoints	= new SectionList()
+		terminations	= new SectionList()
+		vpk 		= new Vector()
+		amp 		= new Vector()
+		vmax		= new Vector()
+		plat		= new Vector()
+		olat		= new Vector()
+		half		= new Vector()
+		dvdr		= new Vector()
+		vrest		= new Vector()
+		vsoma   	= new Vector()
+		vdend   	= new Vector()
+		vnode		= new Vector()
+		voltrec 	= new Vector()
+		synapserec 	= new Vector()
+
+		Zfrequency	= new Vector()
+		number 		= new Vector()		/* graphics */
+		gaussx 		= new Vector()
+		histx 		= new Vector()
+		peaktimes 	= new Vector()
+		segnum	 	= new Vector()
+		selection 	= new Vector()
+		diameterlist	= new Vector()		/* geometry */
+		dchild		= new Vector()
+		dparent		= new Vector()
+		dY		= new Vector()
+		ch		= new Vector()
+		branchpointd	= new Vector()
+		relaread	= new Vector()
+		ralld		= new Vector()
+
+		time 		= new Vector()	
+		tobj    	= new Vector() 		/* used for all sorts of things */
+		vlt   		= new Vector()
+		ref		= new Vector()
+		rin     	= new Vector(cells)
+		tau  		= new Vector(cells)
+		colour 		= new Vector(10,1)
+		colour.x[0] 	= 2
+		colour.x[1] 	= 3
+		colour.x[2] 	= 4
+		colour.x[3] 	= 9
+		colour.x[4] 	= 5
+		colour.x[5] 	= 6
+		colour.x[6] 	= 7
+		colour.x[7] 	= 8
+		colour.x[8] 	= 5
+
+		add		= new Vector(50,1)
+		add.x[0] 	= 0			/* only first cells adds plot */
+		waveform        = new Vector(0)
+		wave            = new Vector(1)
+	if (numarg()==0)	{ rec_set()  }
+			}
+
+/*************************************************************************/
+
+
+
+proc set_origin() { 	local n
+		/* set origin & calculate el L & distance vectors */
+		n = numarg()
+		if (n>0) origins = $s1
+		if (n>1) originx = $2
+		sprint(str1,"%s origin = new SectionRef()",origins)
+		execute(str1)
+		originsec = new SectionList()
+		sprint(str1,"%s originsec.append()",origins)
+		execute(str1)
+		origin.sec distance(0,originx)
+		set_electrotonic()
+	        make_distvectors()
+		print "origin set"
+
+		  }
+

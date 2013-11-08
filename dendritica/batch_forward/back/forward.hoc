@@ -1,0 +1,148 @@
+/* Relating dendritic geometry and signal propagation   */
+/* forward.hoc Version 1.0                              */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+proc  name_somadist() { local d,n
+
+	/* find section which is at $1 from soma on main trunk */ 
+	n = numarg()  
+	set_suffix("reset")
+	if (n>0) d = $1 else d = 200
+	if (n>1)  get(core,ActiveModel,"no read")
+
+	forsec trunk {if (d>mindist()) { if (d<=maxdist()) { origindist = secname() 
+							min = mindist()
+							max = maxdist()}}}
+
+	origindistx = ($1-min)/(max-min)
+	print origindist, " origindistx ",origindistx
+
+	if (n>1) { origins = origindist 
+		   originx = origindistx 
+		   sprint(str1,"%s origin = new SectionRef()",origins)
+		   execute(str1)
+			originsec = new SectionList()
+			sprint(str1,"%s originsec.append()",origins)
+			execute(str1)
+			set_vclamp(origins,originx)
+
+
+		   sprint(str1,"forward%d",d)
+		   suffix = str1
+		   cell_name(core)
+		   resize_cell(suffix)
+	 	   if (n>2) execute($s3)
+		 }
+	}
+
+/**************************************************************/
+
+proc name_halfdecay() { local length,index, n
+
+	n = numarg()
+	set_suffix("reset")
+	if (n>1)  get(core,ActiveModel,"no read")
+	readveca("halfdecay")
+	suffix = $s1
+	cell_name(cell)
+	locs   = $s1
+	length = strob.len(locs)
+	strob.left(locs,length-1)
+	index = strob.substr($s1,"(")
+	str1  = locs
+	strob.left(locs,index)
+	strob.right(str1,index+1)
+	sprint(str1,"locx=%s",str1)
+	execute(str1)
+	origins=locs
+	originx=locx
+	set_vclamp(origins,originx)
+
+	sprint(str1,"%s origin = new SectionRef()",origins)
+	execute(str1)
+	originsec = new SectionList()
+	sprint(str1,"%s originsec.append()",origins)
+	execute(str1)
+
+	if (n>1) resize_cell(suffix)
+	if (n>2) execute($s3)
+
+		}
+
+/**************************************************************/
+
+proc resize_cell() { local yes, wseg, d, n, i
+		/* resize cell according to new origin */ 
+		/* make cut the new origin */ 
+
+		n = numarg()
+
+		ref = new SectionList()  /* delete the sections */
+		forsec all { 
+			yes=0
+			root=0
+			get_parent()
+			while (root==0&&yes==0) {
+			  			Parent.sec ifsec originsec  yes=1
+						Parent.sec get_parent() 
+						}
+			ifsec originsec yes = 0
+
+			if (yes) ref.append()
+		       }
+
+		forsec ref delete_section()
+		remove_axon()
+
+		/* resize the section of the origin */
+		ref = new Vector()
+		access origin.sec
+		wseg = ceil(originx,nseg)
+		for i=1,wseg { ref.append(diam((i-.5)/nseg)) }
+		L = L*wseg/nseg
+		nseg = wseg
+		for i=1,nseg { diam((i-.5)/nseg) = ref.x[i-1] } 
+		originx = 1 	// origin is now at the end of the section
+		set_vclamp(origins,originx)
+		define_shape()
+
+		make_sectionrefs(1) 	/* do all the references again */
+		make_vectors()
+		make_sectionlists()
+	  	insert_channels()	
+		set_spinedensity(cell)
+		reset()
+		set_origin()
+		get_gdist(1)
+		get_gdist(0)
+
+		origin.sec st.loc(originx)
+		origin.sec vclamp.loc(originx)
+		origin.sec synapse.loc(originx)
+		origin.sec Vclamp  = new SectionRef()
+		origin.sec Iclamp  = new SectionRef()
+		origin.sec Synapse = new SectionRef()
+		
+		}
+
+/**************************************************************/
+
+
+
+

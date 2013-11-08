@@ -1,0 +1,15 @@
+halfdecay_min         = 63.1714
+halfdecay_minlocation = "dend[142](0)"
+halfdecay_max         = 221.707
+halfdecay_maxlocation = "dend[83](0)"
+halfdecay_mean        = 139.314
+ap200_min             = 0.197526
+ap200_minlocation     = "dend[199](0)"
+ap200_max             = 0.923825
+ap200_maxlocation     = "dend[206](0)"
+ap200_mean            = 0.354751
+apsoma_min            = 0.148592
+apsoma_minlocation    = "dend[220](0)"
+apsoma_max            = 1.27491
+apsoma_maxlocation    = "dend[133](0)"
+apsoma_mean           = 0.639826

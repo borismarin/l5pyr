@@ -1,0 +1,286 @@
+/* Relating dendritic geometry and signal propagation   */
+/* help.hoc Version 1.0                                 */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+/***************************************************************************
+ Online Help
+ ***************************************************************************/
+
+proc hlp() {    local n
+		/* print help for function/procedure $s1 */
+		/* if numarg()==0, then print names of all functions/procedures */
+
+		n = numarg()
+		notfound = 1		
+		helpinfo = " "
+
+	if (n==0) { 	fxnscan("parse.hoc",helpstr)
+			fxnscan("neuronprefs.hoc",helpstr)
+			fxnscan("electrophysiology.hoc",helpstr)
+			fxnscan("geometry.hoc",helpstr)
+			fxnscan("impedance.hoc",helpstr)
+			fxnscan("output.hoc",helpstr)
+			fxnscan("graphics.hoc",helpstr)
+			fxnscan("statistics.hoc",helpstr)
+			fxnscan("forward.hoc",helpstr)
+			fxnscan("help.hoc",helpstr)
+			fxnscan("gui.hoc",helpstr)
+		  }
+	if (n==2) {  	fxnscan("parse.hoc",helpstr,1)
+			fxnscan("neuronprefs.hoc",helpstr,1)
+			fxnscan("electrophysiology.hoc",helpstr,1)
+			fxnscan("geometry.hoc",helpstr,1)
+			fxnscan("impedance.hoc",helpstr,1)
+			fxnscan("output.hoc",helpstr,1)
+			fxnscan("graphics.hoc",helpstr,1)
+			fxnscan("statistics.hoc",helpstr,1)
+			fxnscan("forward.hoc",helpstr,1)
+			fxnscan("help.hoc",helpstr,1)
+			fxnscan("gui.hoc",helpstr,1)
+		  }
+	if (n==1) {
+		
+			helpstr = $s1
+			sprint(helpstr,"%s()",$s1)
+			if (notfound)	hlpscan("parse.hoc",helpstr)
+			if (notfound)	hlpscan("neuronprefs.hoc",helpstr)
+			if (notfound)	hlpscan("electrophysiology.hoc",helpstr)
+			if (notfound)	hlpscan("geometry.hoc",helpstr)
+			if (notfound)	hlpscan("impedance.hoc",helpstr)
+			if (notfound)	hlpscan("output.hoc",helpstr)
+			if (notfound)	hlpscan("graphics.hoc",helpstr)
+			if (notfound)	hlpscan("statistics.hoc",helpstr)
+			if (notfound)	hlpscan("forward.hoc",helpstr)
+			if (notfound)	hlpscan("help.hoc",helpstr)
+			if (notfound)	hlpscan("gui.hoc",helpstr)
+			if (notfound)   print "function/procedure not found" 
+		  }
+	}
+
+
+
+proc hlpscan() {  /*    subprocedure used for hlp */
+			fileob.ropen($s1)
+    	    		while (!fileob.eof() && (notfound))  {  
+			 fileob.scanstr(str1)
+			 if (strcmp(str1,"proc") == 0 || strcmp(str1,"func") == 0) {
+			 	fileob.scanstr(str1)
+				if (strcmp(str1,helpstr) == 0) {  /* found it */
+					while (strcmp(str1,"/*") != 0) fileob.scanstr(str1)
+					hlpfound()	}}}
+		}
+
+proc hlpfound() { 	local slength					
+			/* subprocedure called by hlpscan which is a subprocedure of hlp() */
+			while (strcmp(str1,"*/") != 0) { fileob.scanstr(str1)
+							  sprint(helpinfo,"%s %s",helpinfo,str1) }
+			slength = strob.len(helpinfo)
+			strob.left(helpinfo,slength-2)
+			fileob.scanstr(str1)
+			printf("     %s\n", helpinfo)
+			helpinfo = ""
+			if (strcmp(str1,"/*") == 0) { hlpfound()}
+			notfound = 0
+		}
+
+
+proc fxnscan() {  local n
+		/* subprocedure used by hlp */
+
+		n = numarg()
+		print "\n",$s1
+		fileob.ropen($s1)
+    	    	while (!fileob.eof())  {  
+			 fileob.scanstr(str1)
+			 if (strcmp(str1,"proc") == 0 || strcmp(str1,"func") == 0) {
+			 	fileob.scanstr(str1)
+				sprint(str1,"  %s",str1)
+				print str1 
+			if (n>2) {
+			while (strcmp(str1,"/*") != 0) fileob.scanstr(str1)
+			hlpfound()
+			if (notfound) print "function/procedure not found" else printf("\n")
+				}	
+					}}
+		}
+
+
+
+
+
+
+
+
+
+
+
+/***************************************************************************
+ Debugging tools
+ ***************************************************************************/
+
+proc check() { 	local i /* print vector sizes - used to spot inconsistencies in the code */
+		sim_calc(1)
+		i = electrotonicL
+		L_switch(0)
+		print "Physical distances\n "
+		consistency()
+		L_switch(1)
+		print "\n\nElectrotonic distances\n"
+		consistency()
+		L_switch(i)
+		}
+
+proc consistency() {   local d /* print vector sizes - used to spot inconsistencies in the code */
+
+		d = gdist.size() 
+		if (d == 0) print "gdist is empty" else print "gdist ", gdist.size()
+		if (d != Ar.size) print d, " != ", Ar.size(), "\t gdist - Ar"
+		if (d != dAr.size) print d, " != ", dAr.size(), "\t gdist - dAr"
+		if (d != sections.size) print d, " != ", sections.size(), "\t gdist - sections"
+		if (d != mdiam.size) print d, " != ", mdiam.size(), "\t gdist - mdiam"
+		if (d != cdiam.size) print d, " != ", cdiam.size(), "\t gdist - cdiam"
+		if (d != rdiam.size) print d, " != ", rdiam.size(), "\t gdist - rdiam"
+		print "adist.max ", adist.max
+		print "_______________________\n"
+
+		d = dist.size() 
+		if (d == 0) print "dist is empty" else print "dist ", dist.size()
+		if (d != vpk.size) print d, " != ", vpk.size(), "\t dist - vpk"
+		if (d != amp.size) print d, " != ", amp.size(), "\t dist - amp"
+		if (d != vmax.size) print d, " != ", vmax.size(), "\t dist - vmax"
+		if (d != plat.size) print d, " != ", plat.size(), "\t dist - plat"
+		if (d != olat.size) print d, " != ", olat.size(), "\t dist - olat"
+		if (d != half.size) print d, " != ", half.size(), "\t dist - half"
+
+		d = somadist.size() 
+		if (d==0) print "somadist is empty" else print "somadist ",somadist.size()
+		if (d!=updst.size) print d," != ",updst.size(),"\tsomadist - updst"
+		if (d!=branchpointdiam.size) print d," != ",branchpointdiam.size(),"\t somadist - branchpointdiam"
+		if (d!=ralldiam.size) print d," != ",ralldiam.size(), "\t somadist - ralldiam"
+		if (d!=relareadiam.size) print d," != ",relareadiam.size(),"\t somadist - relareadiam"
+
+		if (terminationdist.size() == 0) print "terminationdist is empty"
+
+		}
+
+
+proc get_parents()	{ /* print a list of upstream parents */
+
+			access $o1
+			this_section() Parent = new SectionRef()
+			root = 0
+			while (!root) { Parent.sec print secname()
+					Parent.sec get_parent() }
+			Parent.sec print secname()
+			}
+
+proc find_section() { 	local M,m, A,a, B,b, C,c 
+			  /* finds & prints section with greatest lambda */
+			L_switch(1)
+			m = 0
+			forsec all { 
+			m = fdistance(1)
+			if (m>M) { M = m
+			           print "max electrotonic Length",secname(), "\t", M}
+
+			for(x) if (diam(x) < 0.2) print secname(), "\tdiam ", diam(x), x
+				    }
+		  }
+
+
+proc traces() { local i
+		simpass()
+		i = 0
+		forall if (onset_pk-Soma.sec.onset_pk < 0) { this_section() sref = new SectionRef()
+						print secname()
+					    	recvec[i] = new Vector()
+					    	recvec[i].record(&sref.sec.v(0.5),time) 
+					   	i +=1 }
+		simpass()
+
+		for i = 0,20 { sprint(str1,"aponset%g",i)
+		writevecs(str1,time,recvec[i*2],recvec[2*i].c.deriv().div(0.025),recvec[2*i].c.deriv().deriv().div(0.025*0.025))
+
+		}}
+
+
+func fxarea() { /* return membrane area within distance $1 from soma */
+		/* this one is used for the geometry calculations   */
+		/* includes spinescale corrections                  */
+ 
+		I = 0
+		forsec "soma"  		I+= sectest($1,1)*1
+		forsec dendrites	I+= sectest($1)*spinescale
+		forsec dendritesII      I+= sectest($1)*spinescaleII	
+		return I
+	      }	
+
+func sectest() { local g, min, max, areavar,y, Max, Min
+  		     /* return membrane area of a given section within distance $1 from soma */
+		  
+		  areavar  = 0
+		  Min 	   = mn(fdistance(1),fdistance(0)) 
+		  Max      = Min + flength()
+
+		  if (numarg() == 2) { Min = 0 /* exception soma */
+				       Max = mx(fdistance(0),fdistance(1)) 
+				     }
+ 
+		  if(Max<$1) {for(x) areavar +=area(x)    /* section completely within */
+				print secname(), "\t", areavar, "\t", Min,"\t",Max
+			    }	
+				
+		  if(Min < $1 && $1 <= Max)  {  	 /* section partly within */
+						
+					for g =0,nseg-1 { 
+
+					min = Min + (Max-Min)*g/nseg
+					max = Min + (Max-Min)*(g+1)/nseg
+					y   = (g+.5)/nseg
+				    	if (max <  $1) areavar += area(y)
+					if (min <  $1 && max >= $1) areavar += area(y)*($1-min)/(max-min)
+
+						  }
+
+				    if (numarg() == 2) { // special case soma
+					areavar = 0
+				     	for g =0,nseg-1 { 
+					  y   = (g+.5)/nseg
+					  min = mx(fdistance(y) - .5*L/nseg,0)
+					  max = fdistance(y) + .5*L/nseg
+				    	  if (max < $1) areavar += area(y)
+					  if (min < $1 && max >= $1) areavar += area(y)*($1-min)/(max-min)
+					if (electrotonicL) {	for(x) areavar += area(x)
+								       areavar *= $1/Max }
+						        }
+			 				 }
+				print secname(), "\t", areavar, "\t", Min,"\t",Max, "\thalf"
+				            }		
+			return areavar
+	         }
+
+
+proc which() { /* print the name of the data number */
+		clabel($1)
+		print str1 }
+
+
+
+
+

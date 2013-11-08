@@ -1,0 +1,696 @@
+/* Relating dendritic geometry and signal propagation   */
+/* settings.hoc Version 1.0                             */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+/**************************************************************
+  ActiveModels
+***************************************************************/
+
+act0	   = "act0"
+act1	   = "act1"
+act2	   = "act2"
+act3	   = "act3"
+act4	   = "act4"
+act5	   = "act5"
+act6	   = "act6"
+
+
+proc get_settings() {
+
+	get_standard()		// initialize standard settings  (T, activespine ...) 
+	active_get(ActiveModel)			/* get simulation values          */
+  	cell_name(cell)				/* set cell-related strdefs       */
+	activecell = cellname
+	print "loading ", cellname  /* up to here, only flags and strdefs are set */
+
+		}
+
+/**********************************************************************/
+
+proc active_get() {	/* get the simulation values for ActiveModel $s1 */
+
+			if (strcmp($s1,act0) 	   == 0) act0_set()
+			if (strcmp($s1,act1) 	   == 0) act1_set()
+			if (strcmp($s1,act2) 	   == 0) act2_set()
+			if (strcmp($s1,act3) 	   == 0) act3_set()
+			if (strcmp($s1,act4) 	   == 0) act4_set()
+			if (strcmp($s1,act5) 	   == 0) act5_set()
+			if (strcmp($s1,act6) 	   == 0) act6_set()
+		  }
+
+/**********************************************************************/
+
+proc activemodel_set() { /* this puts the active models in the graphics menu */
+			xmenu("Conductances")
+				xradiobutton("Standard ","actname_set(0)")
+				xradiobutton("Standard (A. Destexhe)","actname_set(1)")
+				xradiobutton("high Rax","actname_set(2)")
+				xradiobutton("low Rax","actname_set(3)")
+				xradiobutton("high Cm","actname_set(4)")
+				xradiobutton("low Cm","actname_set(5)")
+				xradiobutton("high Rax (A. Destexhe)","actname_set(6)")
+			xmenu()
+
+			}
+
+/**********************************************************************/
+
+proc actname_set() { local n
+		    n = $1
+		    if (n==0) actname = "standard"
+		    if (n==1) actname = "standard (A. Destexhe)"
+		    if (n==2) actname = "high Rax"
+		    if (n==3) actname = "low Rax"
+		    if (n==4) actname = "high Cm"
+		    if (n==5) actname = "low Cm"
+		    if (n==6) actname = "high Rax (A. Destexhe)"
+			
+ 		    sprint(ActiveModel,"act%d",n)
+		    sprint(cellnameact,"%s using %s conductances",activecell,actname)
+		    if (numarg()<2) print cellnameact
+		    doEvents()
+ 		}
+
+/**************************************************************************/
+
+proc act0_set() {		/* Zach Nature standard (kvz|naz) */
+
+Rax		= 150		/* passive membrane properties */
+Rm         	= 12000
+C_m        	= 1
+G_kv		= 30		/* active membrane properties */
+G_kvnode	= 500
+G_na		= 35
+G_nanode	= 35000
+		 }
+
+/**************************************************************************/
+
+proc act1_set() {		/* Destexhe standard (kvd|nad) */
+
+Rax		= 150		
+Rm         	= 12000
+C_m        	= 1.0
+G_kv		= 40		
+G_kvnode	= 1200
+G_na		= 50
+G_nanode	= 40000
+		 }
+
+/**************************************************************************/
+
+proc act2_set() {  		/* Zach high Rax (kvz|naz)   */
+
+Rax		= 200		
+Rm         	= 12000
+C_m        	= 1.0
+G_kv		= 20		
+G_kvnode	= 100
+G_na		= 28
+G_nanode	= 30000
+		 }
+
+/**************************************************************************/
+
+proc act3_set() {  		/* Zach low Rax (kvz|naz)   */
+
+Rax		= 70		
+Rm         	= 12000
+C_m        	= 1.0
+G_kv		= 35		
+G_kvnode	= 500
+G_na		= 32
+G_nanode	= 32000
+		 }
+
+/**************************************************************************/
+
+proc act4_set() {  		/* Zach high C_m  (kvz|naz)   */
+
+Rax		= 150		
+Rm         	= 8500
+C_m        	= 1.5
+G_kv		= 35		
+G_kvnode	= 35
+G_na		= 42
+G_nanode	= 35000
+		 }
+
+/**************************************************************************/
+
+proc act5_set() {  		/* Zach low C_m (kvz|naz)   */
+
+Rax		= 150		
+Rm         	= 18500
+C_m        	= 0.65
+G_kv		= 50		
+G_kvnode	= 85
+G_na		= 24
+G_nanode	= 24000
+		 }
+
+/**************************************************************************/
+
+proc act6_set() {		/* Destexhe (kvd|nad) high Rax */
+
+Rax		= 200		
+Rm         	= 12000
+C_m        	= 1.0
+G_kv		= 40		
+G_kvnode	= 2000
+G_na		= 50
+G_nanode	= 40000
+		 }
+
+
+/**************************************************************/
+
+proc get_standard()	{ /* standard settings, implemented substitutively, whenever a neuron is loaded */
+		Iq_current 	= 0		/* substitutively no Iq_current */
+		Ca_current	= 0		/* substitutively no Ca_current */
+		KCa_current	= 0		/* substitutively no KCa_current */
+		Km_current	= 0		/* substitutively no Km_current */
+		nonuniform_Rm	= 0		/* substitutively no nonuniform Rm */
+		electrotonicL	= 0		/* substitutively physical lengths */
+		activespine	= 1		/* model spines with active membrane */
+		currentdist	= 1		/* status for which distlist to use*/
+		currentcell	= 0		/* number of currently active cell */
+		simMode 	= 0		/* 0 IClamp 1 Vclamp simulation  */
+		celsius    	= 37		/* general settings */
+		originx         = 0.5           /* where to add axon */
+		Ek         	= -90
+		Ena        	= 60
+		cells 		= 1
+		swc		= 0		/* flag is turned on for Duke Southampton files */
+		synthetic       = 0             /* synthetic neurons need longer simulation time */
+
+		St_del         	= 0		/* stimulation (duration,delay,amplitude) */
+		St_amp		= 1		
+		St_dur		= 9999
+
+		Sim_durI	= 0		/* simulation (duration & dt) */
+		Sim_dtI		= 0.25		/* run for Sim_durI with Sim_dtI, 
+						   then Sim_dur with Sim_dt */
+		Sim_dur		= 15		
+		Sim_dt		= 0.025
+
+		Rec_del		= Sim_durI	/* recording options (for display) */
+		Rec_dur		= Sim_dur
+		Rec_dt		= Sim_dt		
+
+		/* passive membrane properties, which aren't being changed in general */
+		Rm_node 	= 50
+		Cm_myelin  	= 0.04
+
+		G_ca		= .3		/* 13.8.98 */
+		G_kca		= .1
+		G_km		= 3
+		Rm_end		= Rm_half = Rm_steep = 0
+		G_qq		= 0.02		/* Iq settings */
+		Qq_end 		= 20
+		Qq_steep	= 439
+		Qq_half		= 50
+
+
+			}
+
+
+
+		diam_int       	= 0.01   // diameter interval 
+				    //(consider tapering effect when looking at impedance matching)
+		Rest_dur 	= 100	/* simulation settings for achieving rest */
+		purkinjestep 	= 0.25
+		figcurrent 	= -1		/* settings for fig() */
+		fsize 		= 1
+		movie           = 0
+
+
+/**************************************************************/
+
+proc passive_ref() {  	/* reference values for passive membrane properties
+			   Stuart & Spruston J. Neurosci (1998) */
+				  
+			n = numarg()
+				
+			if (n < 2) {	/* control values */
+					Rin             = 32.1
+                        		Tau             = 12.4
+	                        	Slope           = -0.0014029
+        	                	Offset          = 0.95564     	}
+
+			if (n == 2) {	/* CsCl data */
+					Rin             = 51.7
+                        		Tau             = 20.9
+	                        	Slope           = -0.00088573  
+        	                	Offset          = 0.9856      	}
+	           }
+
+/**************************************************************/
+
+amp_max  	= 46.8		/* values from Stuart, Schiller & Sakmann J Physiol (1997) */
+amp_bas  	= 50		/* amp_max + amp_bas = AP amplitude */
+amp_lmd  	= 155		
+vmax_lmd 	= 246
+vmax_amp 	= 697
+plat_s   	= 500		/* slope peak latency */
+olat_s   	= 1200		/* slope onset latency */
+half_s		= 0.002		/* slope halfwidth */
+half_b          = 0.46 		/* baseline halfwidth */
+
+
+
+
+// need to set these values in order to set flags
+
+asections_max   = -9999
+adarea_max      = -9999
+adarea_maxdist  = -9999
+diam_mean	= -9999
+deq_max		= -9999
+deq_maxdist	= -9999
+sections_mean	= -9999
+taper				= -9999
+branchdensityII			= -9999
+branchdensity			= -9999
+branchdensityII_noend		= -9999
+branchdensity_noend		= -9999
+mean_stem_dendrite_diam		= -9999
+darea_max			= -9999
+ataper				= -9999
+abranchdensityII		= -9999
+abranchdensity			= -9999
+abranchdensityII_noend		= -9999
+abranchdensity_noend		= -9999
+amean_stem_dendrite_diam	= -9999
+sections_max			= -9999
+sections_maxdist		= -9999
+taper_mean			= -9999
+
+powers = 0
+geometric = 0
+equiv = 0
+forward = 0
+Yval = 3014
+Xval1= 1000
+Xval2= 1000
+Xval3= 1000
+Axon = 0
+actname_set(0,"don't")
+
+/**********************************************************************/
+
+proc rec_set() {	/* set the recording vectors during simulation 	*/
+			/* $1 		rec_del delay			*/
+			/* $2 		rec_dur duration		*/
+			/* $3 		rec_dt timestep			*/
+
+			n = numarg()
+			if (n>0)  rec_del = $1 else rec_del = Rec_del
+			if (n>1)  rec_dur = $2 else rec_dur = Rec_dur
+			if (n>2)  rec_dt  = $3 else rec_dt  = Rec_dt
+
+			time.indgen(rec_del,rec_del+rec_dur,rec_dt)
+
+			vsoma.record(&Soma.sec.v(0.5),time)
+			vnode.record(&node[0].v(0.5),time)
+			vdend.record(&Distal.sec.v(1),time)
+			voltrec.record(&Vclamp.sec.v(Vclampx),time)
+			synapserec.record(&Synapse.sec.v(Synapsex),time)
+			
+		}
+
+/**********************************************************************/
+
+proc st_set()   {       /* set Iclamp parameters  				*/
+			/* $1 		st_amp amplitude			*/
+			/* $2 		st_del delay				*/
+			/* $3 		st_dur duration				*/
+
+			n = numarg()
+			if (n>0)  st_amp = $1 else st_amp = St_amp
+			if (n>1)  st_del = $2 else st_del = St_del
+			if (n>2)  st_dur = $3 else st_dur = St_dur
+			
+			st.dur = st_dur
+			st.del = st_del
+			st.amp = st_amp 
+			vclamp.dur1 = st_dur
+			synapse.onset = 2
+                }                       
+
+/**********************************************************************/
+
+proc set_synapse() {      local i 
+			/* set Synapse parameters				*/
+			/* $1 		synapse_gmax			*/
+			/* $2 		synapse_tau0				*/
+			/* $3 		synapse_tau1				*/
+			/* $4 		synapse_onset				*/
+			/* $5 		synapse_e				*/
+
+
+			n = numarg()
+			if (n>0)  synapse_gmax  = $1 else synapse_gmax = 0.1
+			if (n>1)  synapse_tau0 = $2 else synapse_tau0 = 0.2
+			if (n>2)  synapse_tau1 = $3 else synapse_tau1 = 3.0
+			if (n>3)  synapse_onset = $4 else synapse_onset = 2
+			if (n>4)  synapse_e = $5 else synapse_e = 0
+
+			synapse.gmax   = synapse_gmax
+			synapse.tau0   = synapse_tau0	
+			synapse.tau1   = synapse_tau1
+			synapse.onset = synapse_onset
+			synapse.e    = synapse_e 
+
+		}
+
+/**********************************************************************/
+
+proc sim_set()   {       local i 
+			/* set simulation  parameters  				*/
+			/* $1 		sim_dur					*/
+			/* $2 		sim_dt					*/
+			/* $3 		sim_durI ( this is before sim_dur)	*/
+			/* $4 		sim_dtI 				*/
+
+			n = numarg()
+			if (n>0)  sim_dur 	= $1 else sim_dur 	= Sim_dur
+			if (n>1)  sim_dt 	= $2 else sim_dt	= Sim_dt
+			if (n>2)  sim_durI 	= $3 else sim_durI	= Sim_durI
+			if (n>3)  sim_dtI 	= $4 else sim_dtI	= Sim_dtI
+			
+			rec_set(sim_durI,sim_dur,sim_dt)
+		}
+
+/**********************************************************************/
+
+proc spine_set()	{ /* sets spines active if $1 = activespine == 1 */
+
+			if (numarg()) activespine = $1 
+
+			if (activespine) { actspinescale = spinescale  
+					actspinescaleII  = spinescaleII  }
+ 			if (!activespine) {actspinescale = 1
+					actspinescaleII	 = 1	}
+			}
+
+/**********************************************************************/
+
+proc active_set()  {	/* set active model parameters  */
+			/* $1 		gbar_na		*/
+			/* $2 		gbar_kv		*/
+			/* $3 		gbar_na (node) 	*/
+			/* $4 		g_qq	 	*/
+			/* $5 		qq_end	 	*/
+			/* $6 		qq_steep 	*/
+			/* $7 		qq_half	 	*/
+
+		n = numarg()
+		if (n>0)  g_na     = $1 else g_na     = G_na
+		if (n>1)  g_kv     = $2 else g_kv     = G_kv
+		if (n>2)  g_nanode = $3 else g_nanode = G_nanode
+		if (n>3)  g_kvnode = $4 else g_kvnode = G_kvnode
+		if (n>4)  g_qq      = $5 else g_qq		= G_qq
+		if (n>5)  qq_end    = $6 else qq_end		= Qq_end 
+		if (n>6)  qq_steep  = $7 else qq_steep 	= Qq_steep
+		if (n>7)  qq_half   = $8 else qq_half		= Qq_half
+
+		if (Iq_current)	forsec all \
+		gbar_qq=qq_end+(g_qq-qq_end)/(1+exp((distance(0)-qq_half)/qq_steep))
+		
+		forsec "soma"         { gbar_na	= g_na
+					gbar_kv = g_kv  }
+
+		forsec "myelin"         gbar_na = g_na
+  
+		forsec "node"         {	gbar_na = g_nanode
+		               		gbar_kv = g_kvnode}
+
+		forsec "hill"         {	gbar_na = g_nanode
+		               		gbar_kv = g_kvnode }
+
+		forsec "iseg"         {	gbar_na = g_nanode
+		               		gbar_kv = g_kvnode }
+	
+		forsec dendritesI     {	gbar_kv = g_kv*actspinescale  /* standard spinecorrectn */
+			  		gbar_na = g_na*actspinescale 
+					if (Iq_current) gbar_qq *= actspinescale }
+
+		forsec dendritesII    {	gbar_kv = g_kv*actspinescaleII  /* spines Arnd Purkinje */
+    			  		gbar_na = g_na*actspinescaleII
+					if (Iq_current) gbar_qq *= actspinescaleII }
+
+		forsec dendritesIII   { dendarea = 0		     /* spines Rapp_cells */
+					for(x) dendarea+= area(x)
+					spinarea      	= 10*L
+					spinescaleIII	= (spinarea+dendarea)/dendarea
+					if (!activespine) spinescaleIII = 1
+					gbar_kv 	= g_kv*spinescaleIII
+			  		gbar_na 	= g_na*spinescaleIII
+					if (Iq_current) gbar_qq *= spinescaleIII }
+	   }
+
+/**********************************************************************/
+
+proc passive_set() { /* set passive properties	*/
+		     /* $1 	rm		*/
+		     /* $2 	rax		*/
+		     /* $3 	c_m 		*/
+		     /* $4 	cm_myelin	*/
+		     /* $5 	qq_end	 	*/
+		     /* $6 	qq_steep 	*/
+		     /* $7 	qq_half	 	*/
+
+		n = numarg()
+		if (n>0)  rm        = $1      else rm     	= Rm
+		if (n>1)  rax       = abs($2) else rax    	= Rax
+		if (n>2)  c_m       = $3      else c_m    	= C_m
+		if (n>3)  cm_myelin = $4      else cm_myelin	= Cm_myelin
+		if (n>4)  rm_node   = $5      else rm_node	= Rm_node
+		if (n>5)  rm_end    = $6      else rm_end	= Rm_end 
+		if (n>6)  rm_steep  = $7      else rm_steep	= Rm_steep
+		if (n>7)  rm_half   = $8      else rm_half	= Rm_half
+
+		if (!nonuniform_Rm) rm_end = rm	 /* only nonuniform distr if nonuniform_Rm==1 */ 
+		origin.sec distance(0,originx)
+                forall {if (rm-rm_end==0) g_pas =1/rm else \
+			g_pas = 1/(rm+(rm-rm_end)/(1+exp((distance(0)-rm_half)/rm_steep)))
+                        cm    = c_m
+                        Ra    = rax
+                       }
+                forsec "myelin"  	cm    = cm_myelin	
+               	forsec "node"    	g_pas = 1/rm_node	
+               	forsec "iseg"    	g_pas = 1/rm	/* make sure iseg & hill have uniform rm */	
+               	forsec "hill"    	g_pas = 1/rm	
+
+                forsec dendritesI     {	cm     *= spinescale		// spine corrections
+                                	g_pas  *= spinescale }
+
+		forsec dendritesII    {	cm     *= spinescaleII		// spine corrections
+                                	g_pas  *= spinescaleII }
+
+		forsec dendritesIII   { dendarea = 0			// spine corrections Rapp
+					for(x) dendarea+= area(x)
+					spinarea        = 10*L
+					spinescaleIII   = (spinarea+dendarea)/dendarea
+                                	cm     	       *= spinescaleIII
+                                	g_pas  	       *= spinescaleIII }
+			}
+
+/**********************************************************************/
+
+proc ca_set()  {/* set Calcium channel parameters  */
+		/* $1 		gbar_ca		*/
+
+		n = numarg()
+		if (n>0)  g_ca     = $1 else g_ca     = G_ca
+		if (Ca_current) {
+
+		forsec "soma"           gbar_ca	= g_ca 
+		forsec dendritesI     	gbar_ca = g_ca*actspinescale  /* standard spinecorrection */
+		forsec dendritesII    	gbar_ca = g_ca*actspinescaleII  /* spines Arnd Purkinje */
+		forsec dendritesIII   { dendarea = 0		     /* spines Rapp_cells */
+					for(x) dendarea+= area(x)
+					spinarea      	= 10*L
+					spinescaleIII	= (spinarea+dendarea)/dendarea
+					if (!activespine) spinescaleIII = 1
+					gbar_ca 	= g_ca*spinescaleIII
+				      }
+		   }}
+
+/**********************************************************************/
+
+proc kca_set()  {	/* set KCalcium channel parameters  */
+			/* $1 		gbar_kca		*/
+
+		n = numarg()
+		if (n>0)  g_kca     = $1 else g_kca     = G_kca
+		if (KCa_current){
+
+		forsec "soma"           gbar_kca	= g_kca 
+		forsec dendritesI     	gbar_kca = g_kca*actspinescale  /* stdard spinecorrection */
+		forsec dendritesII    	gbar_kca = g_kca*actspinescaleII  /* spines Arnd Purkinje */
+		forsec dendritesIII   { dendarea = 0		     /* spines Rapp_cells */
+					for(x) dendarea+= area(x)
+					spinarea      	= 10*L
+					spinescaleIII	= (spinarea+dendarea)/dendarea
+					if (!activespine) spinescaleIII = 1
+					gbar_kca 	= g_kca*spinescaleIII
+				      }
+		   }}
+
+/**********************************************************************/
+
+proc set_vclamp() { local n
+		n = numarg()
+		if (n>0) forsec $s1 Vclamp = new SectionRef()
+		if (n>1) Vclampx = $2
+		Vclamp.sec vclamp.loc(Vclampx)
+		vclamp.rs = 0.001  // 1 kOhm series resistance
+		vclamp.dur1 = rec_dur
+		}
+
+/**********************************************************************/
+
+proc km_set()  {	/* set km_channel parameters  */
+			/* $1 		gbar_km		*/
+
+		n = numarg()
+		if (n>0)  g_km     = $1 else g_km     = G_km
+
+		if (Km_current) {
+
+		forsec "soma"           gbar_ca	= g_km 
+		forsec dendritesI     	gbar_ca = g_km*actspinescale  /* standard spinecorrection */
+		forsec dendritesII    	gbar_ca = g_km*actspinescaleII  /* spines Arnd Purkinje */
+		forsec dendritesIII   { dendarea = 0		     /* spines Rapp_cells */
+					for(x) dendarea+= area(x)
+					spinarea      	= 10*L
+					spinescaleIII	= (spinarea+dendarea)/dendarea
+					if (!activespine) spinescaleIII = 1
+					gbar_km 	= g_km*spinescaleIII
+				      }
+		   }}
+
+/**********************************************************************/
+
+proc set_waveform() { local n
+	      n = numarg()
+
+	      if (n==1)	waveform = $o1.c
+	      if (n==0) { sprint(cellvar,"../data/%s/simvclamp_p18",ActiveModel)
+			  fileob.ropen(cellvar)
+    			  waveform.vread(fileob) }
+	      if (n==2) { fileob.ropen($s1)
+    			  waveform.vread(fileob) }
+
+	      if (n==3) { fileob.chooser("", "Browse for waveforms", "*","Type file name","Cancel")
+    			while (fileob.chooser()) {
+			fileob.getname(str1)
+			fileob.ropen(str1)  
+			waveform.vread(fileob) } }
+
+			}
+
+/**********************************************************************/
+
+proc reset() {  /* set the whole environment to its standard settings */
+
+
+		       threshold_dur = 20   // sim_dur when calculating threshold
+	if (synthetic) threshold_dur = 50   // synthetic geometries can be very long
+	if (forward)   threshold_dur = 40   // forward propagation may take longer 10/3/99
+
+	simMode=0  
+	st_set()
+	set_vclamp()
+	if (numarg()!=1) sim_set()
+	rec_set()
+	spine_set()
+	active_set()
+	set_synapse()
+	passive_set()
+	ca_set()
+	kca_set()
+	km_set()
+	     }
+
+/**********************************************************************/
+
+proc distal_vclamp() { local n
+		/* VClamps p18 somatic AP waveform at section $s1 */
+		/* waveform scaled by $2                          */
+		/* if numarg() > 2 specify Waveform file   */
+		/* if numarg() > 3 plot results   */
+		/* e.g. distal_vclamp("dend[1]",0.5,"coolwave",1)   */
+
+		n = numarg()
+		if (n>1) scaling = $2 else scaling = 1
+
+		set_dendrite($s1)
+	      	set_vclamp($s1)
+		passive_set(rm,rax,c_m,cm_myelin,rm_node,rm_end,rm_steep,rm_half)
+
+		active_set(g_na,g_kv,g_nanode,g_kvnode)
+		st_set(st_amp,st_del,st_dur)
+		rinput_calc()
+
+		simMode = 1 /* voltage clamping */
+		if (n>2) { fileob.ropen($s3)
+    	    		   histx.vread(fileob) 
+			   sim(scaling,histx)		
+			   sim(scaling,histx) } \
+		else     { sim(scaling)
+			   sim(scaling) }
+		sim_calc()
+		if (n>3) sim_plot()
+		}
+
+/**********************************************************************/
+
+proc set_dendrite() {
+		/* e.g. set_dendrite("dend[1]") will set dend[1] as the dendrite to be plotted */
+
+		sprint(str1,"%s Distal = new SectionRef()",$s1)
+		execute(str1)
+		}
+
+/**********************************************************************/
+
+proc save_dendrite() { 	fileob.wopen($s1)
+			vdend.vwrite(fileob)
+			}
+
+/**********************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

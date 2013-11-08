@@ -1,0 +1,10 @@
+/* model cylinder to explore branching-independent effects */
+
+
+forall delete_section()
+ndend = 5000
+create soma, dend[ndend]
+
+
+
+

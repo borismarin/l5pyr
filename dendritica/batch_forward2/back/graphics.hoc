@@ -1,0 +1,661 @@
+/* Relating dendritic geometry and signal propagation   */
+/* graphics.hoc Version 1.0                             */
+/*
+Copyright (C) 2001  Philipp Vetter, Arnd Roth and Michael Hausser
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+func flip() { /* invert number */ return 1/$1 }
+
+func pt() {	local i /* print Vector $o1 */
+		n = numarg()
+		if (n==1)    for i = 0,$o1.size() -1 print $o1.x[i]
+		if (n==2) for i = 0,$o1.size() -1 print i,"\t", $o1.x[i],"\t",$o2.x[i] 
+		if (n==3) for i = 0,$o1.size() -1 print i,"\t", $o1.x[i],"\t",$o2.x[i],"\t",$o3.x[i] 
+		return $o1.size()
+	  }
+
+func P() { /* print SectionList $o1 */
+	   i = 0
+	   n = numarg()
+
+	if (n)	forsec $o1 { print secname()
+			i+=1  }
+
+	if (n==2) forsec $o1 { print secname(),"\t",$o2.x[i]
+				i+=1 }
+	if (n==3) forsec $o1 { print secname(),"\t",$o2.x[i],"\t",$o3.x[i]
+				i+=1 }
+
+
+	   return i
+	}
+
+func ar() {	local a /* return area of SectionList $o1 */
+		a = 0
+		forsec $o1 for(x) a+=area(x)
+		return a
+	  }
+
+func mx()   { 	/* return maximum of $1,$2,.. */ 
+		n = numarg()
+		number=new Vector()
+		if (n == 2) number.append($1,$2)
+		if (n == 3) number.append($1,$2,$3)
+		if (n == 4) number.append($1,$2,$3,$4)
+		if (n == 5) number.append($1,$2,$3,$4,$5)
+		if (n == 6) number.append($1,$2,$3,$4,$5,$6)
+		return number.max
+	     }
+
+func mn()   {   /* return minimum of $1,$2,.. */ 
+		n = numarg()
+		number = new Vector()
+		if (n == 2) number.append($1,$2)
+		if (n == 3) number.append($1,$2,$3)
+		if (n == 4) number.append($1,$2,$3,$4)
+		if (n == 5) number.append($1,$2,$3,$4,$5)
+		if (n == 6) number.append($1,$2,$3,$4,$5,$6)
+		return number.min
+	     }
+
+func mod() {    /* modulus($1,$2) */
+		/* e.g. mod(10,3) = 1 */
+		return $1-int($1/$2)*$2 }
+
+func ceil() {   local a,b
+		 /* ceiling($1,$2) */
+		/* e.g. ceil(10,3.01) = 31 */
+		a = ($1*$2)
+		b = int(a)
+		if (b==a&&a!=0) return b
+		if (a==0) return 1
+		return b + 1
+	   }
+
+
+
+
+func fig() {  	local n 
+		/* plot figure (only $o1 mandatory)			*/
+		/* $o1	xvec (if n = 1 yvec)     			*/
+		/* $o2	yvec                     			*/
+		/* $3	figstyle 0 line, 1 mark  			*/
+		/* $4	add plot to existing figure  1 yes, 0 no  	*/
+		/* $5	color 1 black, 2 red, 3 blue  			*/
+		/* $6	linewidth/symbolsize      			*/
+		/* $s7	mark symbol e.g. "o"  */
+		
+				n 	 = numarg() 
+		if (n ==1) {	y1       = $o1
+				x1 	 = new Vector(y1.size)
+				x1.indgen() }
+		if (n > 1) { 	x1        = $o1
+				y1 	  = $o2 } 
+		if (n > 2)	figstyle  = $3	else 	figstyle  = 0
+		if (n > 3)	figadd    = $4 	else	figadd    = 0 
+		if (n > 4)	figcolor  = $5 	else	figcolor  = 1 
+		if (n > 5)	figsize   = $6 	else	if (figstyle) figsize = 6 else figsize = 1
+		if (n > 6)      figsymbol = $s7	else	figsymbol = "O"
+
+
+		/* get right position for fig */
+
+		if (!figadd) figcurrent += 1  
+		if (!figadd) figure[figcurrent] = new Graph(0)
+
+		/* plot data */
+
+		if (figstyle) y1.mark(figure[figcurrent],x1,figsymbol,figsize,figcolor)
+		if (!figstyle) y1.line(figure[figcurrent],x1,figcolor,figsize)
+
+
+		/* get limits */
+
+		if (figadd) figxmax = mx(figxmax,x1.max) 	else figxmax = x1.max
+		if (figadd) figxmin = mn(figxmin,x1.min,0) 	else figxmin = mn(x1.min,0)
+		if (figadd) figymax = mx(figymax,y1.max) 	else figymax = y1.max
+		if (figadd) figymin = mn(figymin,y1.min,0) 	else figymin = mn(y1.min,0)
+		
+		/* set limits taking into account width of numbers */
+
+		figure[figcurrent].vfixed(fsize)
+		figure[figcurrent].xaxis(3)
+		figure[figcurrent].yaxis(3)
+		figure[figcurrent].yaxis(figymin,figymax)
+		figure[figcurrent].xaxis(figxmin,figxmax)
+
+if (figymax<10) xdigits 	= (figxmax-figxmin) * 0.04 * 3 \
+ else 		xdigits 	= (figxmax-figxmin) * 0.04 * (log(figymax)/log(10))
+
+		xstart 		= figxmin - xdigits
+		xspread 	= xdigits + figxmax - figxmin
+		xpos 		= int(figcurrent/3) * 350
+
+		ydigits 	= (figymax - figymin) * 0.12 
+		ystart 		= figymin - ydigits
+		yspread 	= ydigits + figymax - figymin
+		ypos 		= (mod(figcurrent,3) * 255) + 220 
+
+	//	if (figadd) figure[figcurrent].unmap
+		figure[figcurrent].view(xstart,ystart,xspread,yspread,xpos,ypos,330,200)
+		return figcurrent
+
+		}
+
+
+
+
+
+proc figlab() { /* add labels */
+		/* $o1 labelname */
+		/* $2  xpos (if numarg() == 2 -> color) */
+		/* $3  ypos */
+		/* $4  color */
+
+		n = numarg() 
+		if (n == 4) 	figure[figcurrent].color($4) 	
+		if (n == 2)     figure[figcurrent].color($2)
+		if (n == 1) 	figure[figcurrent].label($s1)
+		if (n == 2) 	figure[figcurrent].label($s1) 	
+		if (n > 2) 	figure[figcurrent].label($2,$3,$s1)
+				figure[figcurrent].color(1)
+	   }
+
+proc clf() { 	local i,n/* clear all figures */
+		
+		
+		for i=0,30 {figure[i] = new SectionList() }
+		figcurrent = -1
+	   }
+
+
+
+proc hist() { local min,max, n, bins
+
+		/* make histogram of vector, into histx|histy */
+		/* $o1 vector */
+		/* $2  bins   */
+		/* $3  max    */
+		/* $4  min    */
+
+		n = numarg()
+		if (n > 1) bins = $2		else bins = 8
+		if (n > 2) max  = $3		else max  = $o1.max  
+		if (n > 3) min  = $4		else min  = $o1.min  
+
+		if ($o1.size() == 0) { histx = new Vector(2,0)
+				       histy = new Vector(2,0)}  else {	
+		histx.indgen(0,bins,1)
+		histx.append(histx.c)
+		histx = histx.c
+		histx.sort()
+		histx.mul((max-min)/bins).add(min)
+
+		histy = $o1.histogram(min,max,(max-min)/bins)
+						histy = histy.c
+		if (histy.size() == bins+1) 	histy.insrt(0,0)
+					    	histy.x[0] = 0
+						histy.x[histy.size()-1] = 0
+		for i = 0,bins+1 { 		histy.insrt((2*i)+1,histy.x[2*i]) }
+						histy.remove(0)
+						histy.remove(histy.size()-1) }
+		}
+
+
+proc gauss() { 	/* Gaussian distribution gaussx | gaussy */
+		/* $o1 vector   */
+		/* $2  width    */
+		/* $3  variance */
+
+		n = numarg()
+			   hi 		= $o1.max*1.2
+			   lo		= 0
+		if (n > 1) width	= $2 else width = 0.01
+		if (n > 2) var		= $3 else var   = 0.01
+
+	
+		gaussy = $o1.sumgauss(lo,hi,width,var)
+		gaussx.indgen(lo,hi,width)
+		if (n > 3) fig(gaussx,gaussy)
+	     }
+
+proc bar() { 	/* Bar chart barx | bary */
+		/* $o1 vector */
+		/* $2  width of bars */
+		/* $3  space in between bars */
+		/* $4  flat to plot */
+		
+		n = numarg()
+		if (n > 1) { width = $2 } else { width = 0.2 }
+		if (n > 2) { space = $3 } else { space = 2   }
+
+
+		N    = $o1.size()
+		barx = new Vector(4*N+1,0)
+		bary = new Vector(4*N+1,0)
+		m    = barx.size() - 1
+
+		i    = 1
+		barx.x[0] = 0.5
+
+		while (i<m) { barx.x[i] = barx.x[i-1] + space			      
+			      i += 1
+			      barx.x[i] = barx.x[i-1]
+			      bary.x[i] = $o1.x[(i-2)/4]
+			      i += 1
+			      barx.x[i] = barx.x[i-1] + width
+			      bary.x[i] = bary.x[i-1]
+			      i += 1
+			      barx.x[i] = barx.x[i-1]
+			      i += 1 }
+
+		if (n>3) fig(barx,bary)
+	   }
+
+
+proc sort() {   local i, n  /* sort vec1; sort vec2 accordingly put result in v1|v2 */
+
+		Ix = new Vector()
+		v1 = new Vector()
+		v2 = new Vector()
+
+		Ix = $o1.sortindex	// sort v1 & then sort v2 accordingly
+		v1 = $o1.c.sort		
+		n = Ix.size() 
+		v2.resize(n)	
+		for i = 0,n-1 { v2.x[i] = $o2.x[Ix.x[i]] }
+	    }
+
+
+
+
+
+
+
+
+proc filter() { local g, m, M, n
+
+		filtery = new Vector()
+		filterx = new Vector()
+
+		n = numarg()
+
+		if (n>2) filter_strength = $3 	else filter_strength = 750
+		if (n>3) width = $4 		else width	     = 5
+		if (n>4) extend = $5 		else extend	     = mn(100,$o1.size() -2)
+
+		filtery = $o1.sumgauss(-extend,$o1.max +extend,width,filter_strength,$o2)
+		filterx.indgen(-extend,$o1.max+extend-width,width)
+
+		g = extend/width
+		for i = 0,g-1   filtery.x[g+i] += filtery.x[g-1-i] 
+		m = filterx.size() - 1 - 2*g 
+
+		M = filterx.size()-1
+
+		for i = 0,g-1   filtery.x[m+i] += filtery.x[M-i]
+
+		filtery.resize(m+g)
+		filterx.resize(m+g)
+
+		filtery.remove(0,g-1)
+		filterx.remove(0,g-1)
+		
+		fig(filterx,filtery)
+		sprint(str1,"filter_strength = %1.0f",filter_strength)
+		figlab(Activecell,0.5,0.9)
+		figlab(str1)
+				
+		}
+
+
+
+
+proc rolling() {local n, n1, N, pre, post,total, c1,c2
+		/* $o1 dist vector */
+		/* $o2 dAr vector */
+		/* $3  window size (optional) */
+		/* $4  figure (optional) */
+		/* $5  manually set max at this distance (optional) */
+	
+		n = numarg()
+		if (n>2) window = $3 else window = 9 
+		w2 = (window-1)/2
+		if (w2 > ($o2.size-1)/2) { 
+		  print "rolling: window size too big for morphology" 
+		  w2 = ($o2.size-5)/2
+					}
+		rollingx = new Vector()
+		rollingy = new Vector()
+		for i = w2,($o2.size()-1-w2)  rollingy.append(roll($o2,i))
+
+		rollingx.copy($o1,w2,$o1.size()-1-w2)
+
+
+		// derivative with free 10% at beginning
+		//-----------
+
+		d2area_max = ref.copy(rollingy.c.deriv(),$o1.size()/10,rollingy.size()-1).max 
+		n1 = rollingy.c.deriv().indwhere("==",d2area_max)
+
+		if (n==5) {
+			n1 = rollingx.indwhere("==",$5)
+			d2area_max = rollingy.c.deriv().x[n1]
+			  }
+
+		d2area_maxdist       = rollingx.x[n1]
+
+		// areas
+                // -----
+		N = gdist.indwhere("==",rollingx.x[n1])
+		ref = $o2.c
+		total = ref.sum
+		ref = ref.c(0,N)
+		pre = ref.sum
+		post = total - pre
+		d2area_maxAr_ratio   = post/pre
+		d2area_maxAr_percent = post/total
+
+		if (n>3) {
+			fig(rollingx,rollingy)
+			fig(rollingx,rollingy.c.deriv().mul(100),0,1,2)
+			histx = new Vector(2,rollingx.x[n1])
+			histy = new Vector(2,rollingy.c.deriv().mul(100).x[n1])
+			fig(histx,histy,1,1,1)
+
+			sprint(str1,"window size = %2.0f",window)
+			figlab(str1,0.3,0.9)
+			figlab(activecell,2) 
+			sprint(str1,"d2area_max %2.4f dist %2.2f ratio %2.2f",d2area_max*100,\
+									      d2area_maxdist,\
+									      d2area_maxAr_ratio)
+			figlab(str1)
+			}
+		}
+
+
+proc rolling2() {local n, n1, N, pre, post,total
+		/* $o1 dist vector */
+		/* $o2 dAr vector */
+		/* $3  window size (optional) */
+		/* $4  figure (optional) */
+		/* $5  manually set max at this distance (optional) */
+	
+		n = numarg()
+		if (n>2) window = $3 else window = 9 
+		w2 = (window-1)/2
+		rollingx = new Vector()
+		rollingy = new Vector()
+		for i = w2,($o2.size()-1-w2)  rollingy.append(roll($o2,i))
+		rollingx.copy($o1,w2,$o1.size()-1-w2)
+
+
+		// derivative with free 10% at beginning
+		//-----------
+
+		d2area_max = ref.copy(rollingy.c.deriv(),1,rollingy.size()-1).max 
+		n1 = rollingy.c.deriv().indwhere("==",d2area_max)
+
+		if (n==5) {
+			n1 = rollingx.indwhere("==",$5)
+			d2area_max = rollingy.c.deriv().x[n1]
+			  }
+
+		d2area_maxdist       = rollingx.x[n1]
+
+		// areas
+                // -----
+		N = gdist.indwhere("==",rollingx.x[n1])
+		ref = $o2.c
+		total = ref.sum
+		ref = ref.c(0,N)
+		pre = ref.sum
+		post = total - pre
+		d2area_maxAr_ratio   = post/pre
+		d2area_maxAr_percent = post/total
+
+		if (n>3) {
+			fig(rollingx,rollingy)
+			fig(rollingx,rollingy.c.deriv().mul(100),0,1,2)
+			histx = new Vector(2,rollingx.x[n1])
+			histy = new Vector(2,rollingy.c.deriv().mul(100).x[n1])
+			fig(histx,histy,1,1,1)
+
+			sprint(str1,"window size = %2.0f",window)
+			figlab(str1,0.3,0.9)
+			figlab(activecell,2) 
+			sprint(str1,"d2area_max %2.4f dist %2.2f ratio %2.2f",d2area_max*100,\
+									      d2area_maxdist,\
+									      d2area_maxAr_ratio)
+			figlab(str1)
+			}
+		}
+
+
+
+
+func roll() {   /* subroutine used when calculating a rolling average */
+		ref = $o1.c
+		ref.remove($2+w2,$o1.size()-1)
+		ref.remove(0,$2-w2)
+		return ref.mean
+		}
+
+
+
+/*********************************************************
+ Read/Write Vectors
+ *********************************************************/
+
+proc writevec_el() {   local n
+			n = numarg()
+			if (electrotonicL&&n==2) writeveca($s1,$o2)
+			if (electrotonicL&&n==1) writeveca($s1)
+			if (!electrotonicL&&n==2) writevec($s1,$o2)
+			if (!electrotonicL&&n==1) writevec($s1)
+
+		}
+
+proc writeveca() {      /* write vector into directory of current active model */
+			/* $s1 filename */
+			/* $o2 vector (if not specified, keeps file open) */
+			/* e.g. writeveca("aRmismatch",aRmismatch) */
+
+            		sprint(cellvar,"../data/%s/%s%s",ActiveModel,$s1,celladdress)
+			if (numarg() == 2){	fileob.wopen(cellvar)
+						$o2.vwrite(fileob) } else wopen(cellvar) }
+
+proc readveca() {	/* read vector from directory of current active model */
+			/* $s1 filename */
+			/* $o2 vector (if not specified, just reads file) */
+			/* e.g. readveca("aRmismatch",aRmismatch) */
+
+            		sprint(cellvar,"../data/%s/%s%s",ActiveModel,$s1,celladdress)
+			if (numarg() == 2) {	fileob.ropen(cellvar)
+    	    					$o2.vread(fileob)  } else { xopen(cellvar) }
+		}
+
+proc writevec() {      	/* write vector to ../data/geometry/filename   */
+			/* $s1 filename */
+			/* $o2 vector (if not specified, just opens file) */
+			/* e.g. writevec("cdiam",cdiam) */
+
+            		sprint(cellvar,"../data/geometry/%s%s",$s1,celladdress)
+			if (numarg() == 2)  {	fileob.wopen(cellvar)
+						$o2.vwrite(fileob) } else wopen(cellvar)}
+
+proc readvec() {	/* read ../data/geometry/filename into vector  */
+			/* $s1 filename */
+			/* $o2 vector (if not specified, just reads file) */
+			/* e.g. readvec("cdiam",cdiam) */			
+
+            		sprint(cellvar,"../data/geometry/%s%s",$s1,celladdress)
+			if (numarg() == 2) {	fileob.ropen(cellvar)
+    	    					$o2.vread(fileob)  } else xopen(cellvar)}
+
+proc writevecs() {  local i,M, k,n 
+			/* write vectors $o2..$ox to ../neuron_output/filename in ascii format */  
+			/* $s1 filename */
+			/* $o2-$o7 vector (if not specified, just reads file) */
+			/* e.g. writevecs("test",dst,amp,vpk) */
+
+       		    sprint(str1,"../neuron_output/%s",$s1)
+		    wopen(str1)
+		    n = numarg() -1
+		    M = $o2.size()-1
+if (n == 1) for i = 0,M { fprint("%2.4f\n",$o2.x[i]) }
+if (n == 2) for i = 0,M { fprint("%2.4f\t%2.4f\n",$o2.x[i],$o3.x[i]) }
+if (n == 3) for i = 0,M { fprint("%2.4f\t%2.4f\t%2.4f\n",$o2.x[i],$o3.x[i],$o4.x[i]) }
+if (n == 4) for i = 0,M { fprint("%2.4f\t%2.4f\t%2.4f\t%2.4f\n",$o2.x[i],$o3.x[i],$o4.x[i],$o5.x[i]) }
+if (n == 5) for i = 0,M { fprint("%2.4f\t%2.4f\t%2.4f\t%2.4f\t%2.4f\n",$o2.x[i],$o3.x[i],$o4.x[i],$o5.x[i],$o6.x[i]) }
+if (n == 6) for i = 0,M { fprint("%2.4f\t%2.4f\t%2.4f\t%2.4f\t%2.4f\t%2.4f\n",$o2.x[i],$o3.x[i],$o4.x[i],$o5.x[i],$o6.x[i],$o7.x[i]) }
+if (n == 7) for i = 0,M { fprint("%2.4f\t%2.4f\t%2.4f\t%2.4f\t%2.4f\t%2.4f\t%2.4f\n",$o2.x[i],$o3.x[i],$o4.x[i],$o5.x[i],$o6.x[i],$o7.x[i],$o8.x[i]) }
+		wopen()
+
+		}
+
+
+proc nvectors() { /* return number of vectors in total */ 
+		print vectorlist.count(), " Vectors" }
+
+
+
+
+proc nasens() { /* g_na sensitivity plot for cell $s1 */
+		/* optional ActiveModel $s2         */
+		/* optional write to file $s3       */
+		/* e.g. nasens(int2,act0,"interneuron")    */
+
+			cell_name($s1)
+			if (numarg()==1) ActiveModel = act0 else ActiveModel = $s2
+
+			readveca("nathreshold")
+			fig(sens[0],sens[2],1)
+			sprint(str1,"gna v AP200/APsoma (%s)",cellname)
+			figlab(str1,0.3,0.9)
+
+			if (numarg()==3) writevecs($s3,sens[0],sens[2])
+
+
+		     }
+
+
+
+
+/****SPACE PLOT************************************************************/
+/*************************************************************************/
+/*************************************************************************/
+/*************************************************************************/
+/*************************************************************************/
+
+
+/* first, declare necessary arrays                                    */
+
+siz = 3000
+double steps3d[siz]       /* [# sections]; steps3d < 50 */
+double xstrt[siz][200]    /* [# sections][max(n3d())]   */
+double xend[siz][200]
+double ystrt[siz][200]
+double yend[siz][200]
+double diamstart[siz][200]
+double diamend[siz][200]
+double vpeak[siz][200]
+double ampl[siz][200]
+double fdist[siz][200]
+
+
+proc spaceplot() { local n
+
+		/* Space plot version (with Mathematica)                              */
+		/* Michael Hausser and Arnd Roth                                      */
+		/* Version 1.2 for nrnoc                                    23.9.1998 */
+		/* modified Philipp Vetter */
+
+	sectionCount = 0
+	n = numarg()
+	if (n>0) str5 = $s1 else str5 = "spaceplot"
+	sprint(str5,"../neuron_output/%s",str5)
+
+      forsec all	{
+        steps3d[sectionCount] = n3d()
+        for (stepCount = 1; stepCount < steps3d[sectionCount]; stepCount += 1) {
+               	xstrt[sectionCount][stepCount]     = x3d(stepCount - 1)
+               	xend[sectionCount][stepCount]      = x3d(stepCount)
+               	ystrt[sectionCount][stepCount]     = y3d(stepCount - 1)
+               	yend[sectionCount][stepCount]      = y3d(stepCount)
+               	diamstart[sectionCount][stepCount] = diam3d(stepCount - 1)
+               	diamend[sectionCount][stepCount]   = diam3d(stepCount)
+		vpeak[sectionCount][stepCount]     = vpeak_pk(stepCount/steps3d[sectionCount])
+		ampl[sectionCount][stepCount]      = vpeak_pk(stepCount/steps3d[sectionCount])-vonset_pk(stepCount/steps3d[sectionCount])
+		fdist[sectionCount][stepCount]     = fdistance(stepCount/steps3d[sectionCount])
+       										 }
+        sectionCount += 1
+		     }
+
+
+	siz = sectionCount - 1
+
+	wopen(str5)
+
+	for (sectionCount=0; sectionCount<siz; sectionCount+=1) {
+	for (stepCount=1; stepCount<steps3d[sectionCount]; stepCount+=1) {
+
+        /* write results to file */
+        fprint("%g %g %g %g %g %g %g %g %g\n", xstrt[sectionCount][stepCount],\
+				     	xend[sectionCount][stepCount],\
+                                     	ystrt[sectionCount][stepCount],\
+				     	yend[sectionCount][stepCount],\
+				     	diamstart[sectionCount][stepCount],\
+				     	diamend[sectionCount][stepCount],\
+        			     	vpeak[sectionCount][stepCount],\
+        			     	ampl[sectionCount][stepCount],\
+        			     	fdist[sectionCount][stepCount] )
+                                                                      }  }
+	wopen()
+
+		}
+										
+
+
+
+
+
+
+
+
+proc show() { local n
+		/* shape plot of what is going on */ 
+
+	splot = new PlotShape(0)
+	flush_list.append(splot)
+	splot.save_name("fast_flush_list.")
+	splot.size(0,0,100,100)
+	splot.show(0)
+	splot.variable("vpeak_pk")
+	splot.exec_menu("Shape Plot")
+	splot.view(-400, 0, 1000, 0, 705, 220, 540, 540)
+	splot.variable("vpeak_pk")
+	splot.flush()
+
+	splot.scale(-80,40)
+	}
+
+
+
+
+
+
